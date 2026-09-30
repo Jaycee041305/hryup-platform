@@ -7,7 +7,7 @@ databases:
 services:
   - type: web
     name: hryup-platform
-    runtime: python
+    env: python
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
     startCommand: gunicorn hryup.wsgi:application
