@@ -1,0 +1,193 @@
+{% extends 'base_app.html' %}
+
+{% block title %}{{ company.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'companies:company_list' %}" class="text-decoration-none">Clients</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ company.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">{{ company.name }}</h2>
+    {% if user.is_hryup_admin %}
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Actions
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'companies:company_edit' company.pk %}"><i class="bi bi-pencil me-2"></i>Edit Details</a></li>
+            <li><a class="dropdown-item" href="{% url 'companies:subscription_create' company.pk %}"><i class="bi bi-card-checklist me-2"></i>Manage Subscription</a></li>
+            <li><a class="dropdown-item" href="{% url 'companies:staff_assignment' company.pk %}"><i class="bi bi-person-lines-fill me-2"></i>Assign HR Staff</a></li>
+            <li><hr class="dropdown-divider"></li>
+            {% if company.is_active %}
+            <li>
+                <a class="dropdown-item text-danger" href="#" data-bs-confirm="true" data-confirm-title="Deactivate Client" data-confirm-message="Are you sure you want to deactivate this client?" href="#">
+                    <i class="bi bi-slash-circle me-2"></i>Deactivate
+                </a>
+            </li>
+            {% else %}
+            <li>
+                <a class="dropdown-item text-success" href="#" data-bs-confirm="true" data-confirm-title="Activate Client" data-confirm-message="Are you sure you want to activate this client?" href="#">
+                    <i class="bi bi-check-circle me-2"></i>Activate
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row">
+    <!-- Company Info -->
+    <div class="col-md-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Company Information</h5>
+                {% if company.is_active %}
+                    {% include 'partials/status_badge.html' with status='Active' %}
+                {% else %}
+                    {% include 'partials/status_badge.html' with status='Inactive' %}
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">Registration Name</div>
+                        <div class="fw-medium">{{ company.registration_name|default:company.name }}</div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">TIN</div>
+                        <div class="fw-medium">{{ company.tin|default:"-" }}</div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">Industry</div>
+                        <div class="fw-medium">{{ company.industry|default:"-" }}</div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">Company Size</div>
+                        <div class="fw-medium">{{ company.get_size_display|default:"-" }}</div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">Email Address</div>
+                        <div class="fw-medium"><a href="mailto:{{ company.email }}">{{ company.email }}</a></div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                        <div class="text-muted small mb-1">Phone Number</div>
+                        <div class="fw-medium">{{ company.phone|default:"-" }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small mb-1">Address</div>
+                        <div class="fw-medium">{{ company.address|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats & Sub -->
+    <div class="col-md-4 mb-4">
+        <div class="row">
+            <!-- Subscription -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Current Subscription</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if company.active_subscription %}
+                            <div class="text-center mb-3">
+                                <h3 class="text-primary fw-bold mb-1">{{ company.active_subscription.package.name }}</h3>
+                                {% include 'partials/status_badge.html' with status=company.active_subscription.status %}
+                            </div>
+                            <ul class="list-unstyled mb-0 small">
+                                <li class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Start Date:</span>
+                                    <span class="fw-medium">{{ company.active_subscription.start_date|date:"M d, Y" }}</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span class="text-muted">End Date:</span>
+                                    <span class="fw-medium">{{ company.active_subscription.end_date|date:"M d, Y" }}</span>
+                                </li>
+                            </ul>
+                            
+                            <hr>
+                            <h6 class="small fw-bold text-uppercase text-muted mb-2">Enabled Modules</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if company.active_subscription.package.has_201_files %}<span class="badge bg-light text-dark border">201 Files</span>{% endif %}
+                                {% if company.active_subscription.package.has_attendance %}<span class="badge bg-light text-dark border">Attendance</span>{% endif %}
+                                {% if company.active_subscription.package.has_leave %}<span class="badge bg-light text-dark border">Leave</span>{% endif %}
+                                {% if company.active_subscription.package.has_payroll %}<span class="badge bg-light text-dark border">Payroll</span>{% endif %}
+                                {% if company.active_subscription.package.has_recruitment %}<span class="badge bg-light text-dark border">Recruitment</span>{% endif %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <p class="text-muted mb-3">No active subscription found.</p>
+                                {% if user.is_hryup_admin %}
+                                <a href="{% url 'companies:subscription_create' company.pk %}" class="btn btn-sm btn-outline-primary">Add Subscription</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="col-12">
+                <div class="card bg-primary text-white">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="fs-1 me-3 opacity-50"><i class="bi bi-people-fill"></i></div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">{{ company.users.count }}</h3>
+                            <div class="text-white-50">Total Employees</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assigned Staff -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Assigned HRyUp Staff</h5>
+                {% if user.is_hryup_admin %}
+                <a href="{% url 'companies:staff_assignment' company.pk %}" class="btn btn-sm btn-outline-primary">Manage</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for assignment in assignments %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                {{ assignment.staff.get_short_name|default:assignment.staff.email|make_list|first|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-medium">{{ assignment.staff.get_full_name|default:"-" }}</div>
+                                <div class="text-muted small">{{ assignment.staff.email }}</div>
+                            </div>
+                        </div>
+                        {% if assignment.is_primary %}
+                            <span class="badge bg-success">Primary</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Secondary</span>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        No staff assigned to this company yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

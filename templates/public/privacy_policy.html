@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Data Privacy Notice - HRyUp{% endblock %}
+
+{% block content %}
+<!-- Navbar -->
+{% include "partials/navbar.html" %}
+
+<div class="container py-5" style="margin-top: 80px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold text-navy mb-4">Data Privacy Notice</h1>
+            <p class="text-muted">Effective Date: October 2026</p>
+            
+            <hr class="mb-4">
+
+            <div class="content text-secondary">
+                <p>HRyUp is committed to protecting your personal information and complying with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong> of the Philippines. This notice explains how we collect, use, share, and protect the personal data of our users, clients, and their employees.</p>
+
+                <h4 class="text-navy fw-bold mt-4">1. Information We Collect</h4>
+                <p>We collect personal information necessary to deliver our virtual HR support services. This includes:</p>
+                <ul>
+                    <li><strong>Contact Information:</strong> Names, email addresses, phone numbers.</li>
+                    <li><strong>Employment Data:</strong> 201 File documents, government IDs, employment contracts, performance records.</li>
+                    <li><strong>Payroll & Attendance Data:</strong> Time logs, leave balances, compensation parameters (excluding tax computations).</li>
+                    <li><strong>Platform Usage Data:</strong> Audit logs, IP addresses, user agent strings collected during platform usage for security.</li>
+                </ul>
+
+                <h4 class="text-navy fw-bold mt-4">2. Purpose of Collection</h4>
+                <p>Your personal data is collected and processed exclusively to:</p>
+                <ul>
+                    <li>Provide contracted virtual HR services to your employer (our Client).</li>
+                    <li>Manage attendance, leave, recruitment, and payroll compilation.</li>
+                    <li>Authenticate user accounts and ensure platform security.</li>
+                    <li>Comply with statutory and legal obligations.</li>
+                </ul>
+
+                <h4 class="text-navy fw-bold mt-4">3. Data Sharing and Transfer</h4>
+                <p>We do not sell your personal data. We only share information:</p>
+                <ul>
+                    <li>With your employer (the Data Controller).</li>
+                    <li>With authorized HRyUp staff assigned to support your company.</li>
+                    <li>With trusted third-party cloud infrastructure providers bound by strict confidentiality agreements.</li>
+                </ul>
+
+                <h4 class="text-navy fw-bold mt-4">4. Security and Storage</h4>
+                <p>We implement strict organizational, physical, and technical security measures (including SSL encryption, Role-Based Access Controls, and strict Tenant Data Isolation) to protect your data. Data is retained only for as long as necessary to fulfill the purposes outlined above or as required by law.</p>
+
+                <h4 class="text-navy fw-bold mt-4">5. Your Rights as a Data Subject</h4>
+                <p>Under RA 10173, you have the right to be informed, object to processing, access your data, rectify inaccuracies, suspend or withdraw consent, and claim damages for violations. To exercise these rights, please contact your employer's HR representative or contact our Data Protection Officer.</p>
+
+                <div class="card bg-light border-0 mt-5 p-4 rounded-3">
+                    <h5 class="fw-bold">Contact Us</h5>
+                    <p class="mb-0">For privacy-related inquiries, please contact:<br>
+                    <strong>Data Protection Officer</strong><br>
+                    Email: dpo@hryup.ph<br>
+                    Address: Las Piñas City, Philippines</p>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'core:landing' %}" class="btn btn-outline-navy">&larr; Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

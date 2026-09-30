@@ -1,0 +1,94 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Audit Log{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Audit Log</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">Audit Log</h2>
+    <button class="btn btn-outline-secondary">
+        <i class="bi bi-download me-1"></i> Export CSV
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="p-3 border-bottom bg-light">
+            <form method="get" class="row g-2">
+                <div class="col-md-3">
+                    <select class="form-select" name="action">
+                        <option value="">All Actions</option>
+                        <option value="CREATE">Create</option>
+                        <option value="UPDATE">Update</option>
+                        <option value="DELETE">Delete</option>
+                        <option value="LOGIN">Login</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="user" placeholder="Search by user email...">
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="date" class="form-control" name="start_date">
+                        <span class="input-group-text">to</span>
+                        <input type="date" class="form-control" name="end_date">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0 font-monospace" style="font-size: 0.875rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Object</th>
+                        <th>Description</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-muted">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ log.user.email|default:"System" }}</td>
+                        <td>
+                            {% if log.action == 'CREATE' %}<span class="badge bg-success">CREATE</span>
+                            {% elif log.action == 'UPDATE' %}<span class="badge bg-warning text-dark">UPDATE</span>
+                            {% elif log.action == 'DELETE' %}<span class="badge bg-danger">DELETE</span>
+                            {% else %}<span class="badge bg-info">{{ log.action }}</span>{% endif %}
+                        </td>
+                        <td>{{ log.content_type }} ({{ log.object_id }})</td>
+                        <td>{{ log.description }}</td>
+                        <td class="text-muted">{{ log.ip_address|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">No audit logs found.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer bg-white border-top-0 pt-3 pb-2">
+            {% include 'partials/pagination.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

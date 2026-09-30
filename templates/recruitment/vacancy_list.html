@@ -1,0 +1,6 @@
+<h1>Vacancies</h1>
+<ul>
+{% for vacancy in vacancies %}
+    <li>{{ vacancy.title }} - {{ vacancy.get_status_display }}</li>
+{% endfor %}
+</ul>

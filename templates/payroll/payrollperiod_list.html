@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Payroll Periods</h2>
+        <a href="{% url 'payroll:period_create' %}" class="btn btn-primary">Create New Period</a>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Note:</strong> This module is for <em>Data Compilation Only - No Tax Computation</em>.
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in periods %}
+                    <tr>
+                        <td>{{ period.start_date }}</td>
+                        <td>{{ period.end_date }}</td>
+                        <td>
+                            <span class="badge {% if period.status == 'OPEN' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ period.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'payroll:period_detail' period.pk %}" class="btn btn-sm btn-info">View Details</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No payroll periods found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

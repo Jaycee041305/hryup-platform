@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>HR Templates Library</h2>
+    <p class="text-muted">Download templates provided by HRyUp for your company's use.</p>
+
+    {% if user.is_hryup_admin or user.is_hryup_staff %}
+    <div class="card mb-4">
+        <div class="card-header">Upload New Template</div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for template in templates %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ template.title }}</h5>
+                    <p class="card-text text-muted small">{{ template.description|truncatewords:20 }}</p>
+                    <p class="card-text"><small class="text-muted">Added: {{ template.created_at|date:"M d, Y" }}</small></p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{% url 'templates_lib:template_download' template.pk %}" class="btn btn-sm btn-outline-primary w-100">Download</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center text-muted">No templates available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

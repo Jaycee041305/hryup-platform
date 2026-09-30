@@ -1,0 +1,55 @@
+<header class="topbar">
+    <div class="d-flex align-items-center">
+        <button class="btn btn-link text-dark d-md-none me-3" id="sidebarToggle">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="d-none d-md-block">
+            {% block breadcrumbs_render %}
+            {% endblock %}
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center">
+        <!-- Notifications -->
+        <div class="dropdown me-3">
+            <a class="text-secondary position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell fs-5"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem;">
+                    3
+                    <span class="visually-hidden">unread messages</span>
+                </span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-0" style="width: 300px;">
+                <li class="p-3 border-bottom text-center fw-bold">Notifications</li>
+                <li><a class="dropdown-item py-2" href="#"><small>New leave request pending</small></a></li>
+                <li><a class="dropdown-item py-2" href="#"><small>Payroll run completed</small></a></li>
+                <li><hr class="dropdown-divider m-0"></li>
+                <li><a class="dropdown-item py-2 text-center text-primary" href="#"><small>View All</small></a></li>
+            </ul>
+        </div>
+        
+        <!-- User Dropdown -->
+        <div class="dropdown">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                    {{ user.get_short_name|default:user.email|make_list|first|upper }}
+                </div>
+                <div class="d-none d-sm-block text-dark me-1">
+                    <div class="fw-semibold lh-1" style="font-size: 0.9rem;">{{ user.get_full_name|default:user.email }}</div>
+                    <div class="text-muted lh-1 mt-1" style="font-size: 0.75rem;">{{ user.get_role_display }}</div>
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
+                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form action="{% url 'accounts:logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

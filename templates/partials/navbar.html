@@ -1,0 +1,38 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-navy d-flex align-items-center" href="{% url 'core:landing' %}">
+            <img src="{% static 'img/hryup_logo.png' %}" alt="HRyUp Logo" class="me-2" style="height: 60px;">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item me-3">
+                    <a class="nav-link fw-medium text-dark" href="{% url 'core:landing' %}">Home</a>
+                </li>
+                <li class="nav-item me-3">
+                    <a class="nav-link fw-medium text-dark" href="#services">Services</a>
+                </li>
+                <li class="nav-item me-3">
+                    <a class="nav-link fw-medium text-dark" href="#about">About Us</a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard:index' %}" class="btn btn-navy px-4 rounded-pill">My Dashboard</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item me-2">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-gold px-4 rounded-pill">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:signup' %}" class="btn btn-navy px-4 rounded-pill">Sign Up</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Monthly Summary - {{ month }}/{{ year }}</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Total Days Present: {{ total_days }}</h5>
+            <!-- Add more summary details as needed -->
+        </div>
+    </div>
+    
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendances %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.time_in|time:"h:i A"|default:"-" }}</td>
+                <td>{{ record.time_out|time:"h:i A"|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">No attendance records for this month.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'attendance:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

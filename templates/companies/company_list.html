@@ -1,0 +1,103 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Clients{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Clients</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">Clients (Companies)</h2>
+    {% if user.is_hryup_admin %}
+    <a href="{% url 'companies:company_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Add Client
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="p-3 border-bottom bg-light">
+            <form method="get" class="row g-2">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" name="q" value="{{ request.GET.q }}" placeholder="Search companies...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                        <option value="INACTIVE" {% if request.GET.status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Industry</th>
+                        <th>Size</th>
+                        <th>Subscription</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ company.name }}</div>
+                            <div class="text-muted small">{{ company.email }}</div>
+                        </td>
+                        <td>{{ company.industry|default:"-" }}</td>
+                        <td>{{ company.get_size_display|default:"-" }}</td>
+                        <td>
+                            {% if company.active_subscription %}
+                                <span class="badge bg-primary">{{ company.active_subscription.package.name }}</span>
+                                <div class="text-muted small mt-1">Exp: {{ company.active_subscription.end_date|date:"M d, Y" }}</div>
+                            {% else %}
+                                <span class="badge bg-secondary">No Active Plan</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if company.is_active %}
+                                {% include 'partials/status_badge.html' with status='Active' %}
+                            {% else %}
+                                {% include 'partials/status_badge.html' with status='Inactive' %}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'companies:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            {% include 'partials/empty_state.html' with icon='bi-building' title='No Clients Found' description='No companies match your search criteria.' %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer bg-white border-top-0 pt-3 pb-2">
+            {% include 'partials/pagination.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

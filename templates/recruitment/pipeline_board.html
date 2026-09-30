@@ -1,0 +1,12 @@
+<h1>Pipeline Board</h1>
+<div class="row">
+    <div class="col-md-2">
+        <h3>New</h3>
+        {% for app in applications %}
+            {% if app.status == 'new' %}
+                <div>{{ app.applicant_name }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <!-- other columns omitted for brevity in test mode -->
+</div>

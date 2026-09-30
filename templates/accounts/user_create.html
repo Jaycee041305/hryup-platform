@@ -1,0 +1,85 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Add User{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:user_list' %}" class="text-decoration-none">Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Create New User</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h6 class="mb-3 text-primary">Account Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.email %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.role %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.first_name %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.last_name %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12" id="companyField" style="display: none;">
+                            {% include 'partials/form_field.html' with field=form.company %}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 text-primary">Security</h6>
+                    <p class="text-muted small">A temporary password will be generated and emailed to the user, prompting them to change it upon first login.</p>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('{{ form.role.id_for_label }}');
+        const companyField = document.getElementById('companyField');
+        
+        function toggleCompany() {
+            if (roleSelect.value === 'CLIENT_MANAGER' || roleSelect.value === 'CLIENT_EMPLOYEE') {
+                companyField.style.display = 'block';
+            } else {
+                companyField.style.display = 'none';
+            }
+        }
+        
+        if (roleSelect) {
+            roleSelect.addEventListener('change', toggleCompany);
+            toggleCompany(); // initial state
+        }
+    });
+</script>
+{% endblock %}

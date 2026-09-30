@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Ticket Thread -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ ticket.subject }}</h4>
+                    <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <small class="text-muted">By {{ ticket.employee.user.get_full_name }} on {{ ticket.created_at|date:"M d, Y H:i" }}</small>
+                        <p class="mt-2" style="white-space: pre-wrap;">{{ ticket.description }}</p>
+                    </div>
+
+                    <hr>
+                    <h5>Replies</h5>
+                    {% for reply in replies %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <small class="text-muted fw-bold">{{ reply.sender.get_full_name }}</small>
+                            <small class="text-muted float-end">{{ reply.created_at|date:"M d, Y H:i" }}</small>
+                            <p class="mb-0 mt-1" style="white-space: pre-wrap;">{{ reply.message }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No replies yet.</p>
+                    {% endfor %}
+
+                    <div class="mt-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ reply_form.as_p }}
+                            <button type="submit" name="add_reply" class="btn btn-primary">Post Reply</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            {% if escalations %}
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    Escalations
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for esc in escalations %}
+                    <li class="list-group-item">
+                        <strong>To:</strong> {{ esc.escalated_to.get_full_name }} <br>
+                        <strong>Reason:</strong> {{ esc.reason }} <br>
+                        <small class="text-muted">{{ esc.created_at|date:"M d, Y H:i" }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar for Admin/Staff Tools -->
+        <div class="col-md-4">
+            {% if user.is_hryup_staff or user.is_hryup_admin %}
+            <div class="card mb-4">
+                <div class="card-header">Manage Ticket</div>
+                <div class="card-body">
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Update Status</label>
+                            {{ status_form.status }}
+                        </div>
+                        <button type="submit" name="update_status" class="btn btn-sm btn-outline-primary">Update</button>
+                    </form>
+
+                    <hr>
+
+                    <h6>Escalate to Client Manager</h6>
+                    <form method="post" action="{% url 'helpdesk:ticket_escalate' ticket.pk %}">
+                        {% csrf_token %}
+                        {% for field in escalate_form %}
+                        <div class="mb-2">
+                            <label class="form-label small">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" name="escalate_ticket" class="btn btn-sm btn-warning">Escalate</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">Details</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Company:</strong> {{ ticket.company.name }}</li>
+                    <li class="list-group-item"><strong>Category:</strong> {{ ticket.category }}</li>
+                    <li class="list-group-item"><strong>Assigned:</strong> {{ ticket.assigned_staff.get_full_name|default:"Unassigned" }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

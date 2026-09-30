@@ -1,0 +1,6 @@
+<h1>Shortlisted Applications</h1>
+<ul>
+{% for app in applications %}
+    <li>{{ app.applicant_name }} - {{ app.vacancy.title }}</li>
+{% endfor %}
+</ul>

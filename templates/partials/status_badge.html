@@ -1,0 +1,17 @@
+{% if status %}
+    {% with s=status|lower %}
+        {% if s == 'active' or s == 'approved' or s == 'completed' %}
+            <span class="badge badge-success">{{ status|upper }}</span>
+        {% elif s == 'pending' or s == 'in_progress' or s == 'review' %}
+            <span class="badge badge-warning">{{ status|upper }}</span>
+        {% elif s == 'rejected' or s == 'expired' or s == 'cancelled' or s == 'inactive' %}
+            <span class="badge badge-danger">{{ status|upper }}</span>
+        {% elif s == 'draft' or s == 'archived' %}
+            <span class="badge badge-secondary">{{ status|upper }}</span>
+        {% else %}
+            <span class="badge badge-info">{{ status|upper }}</span>
+        {% endif %}
+    {% endwith %}
+{% else %}
+    <span class="badge badge-secondary">UNKNOWN</span>
+{% endif %}

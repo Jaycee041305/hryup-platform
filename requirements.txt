@@ -1,0 +1,13 @@
+Django>=5.1,<5.2
+gunicorn>=22.0
+whitenoise>=6.7
+python-dotenv>=1.0
+dj-database-url>=2.2
+psycopg2-binary>=2.9
+Pillow>=10.4
+django-axes>=7.0
+cloudinary>=1.41
+django-cloudinary-storage>=0.3.0
+openpyxl>=3.1
+reportlab>=4.2
+pytest-django>=4.8

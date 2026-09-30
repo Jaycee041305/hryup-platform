@@ -1,0 +1,124 @@
+{% extends 'base_app.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Users</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">User Management</h2>
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Add User
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="p-3 border-bottom bg-light">
+            <form method="get" class="row g-2">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" name="q" value="{{ request.GET.q }}" placeholder="Search users...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="role">
+                        <option value="">All Roles</option>
+                        <option value="HRYUP_ADMIN" {% if request.GET.role == 'HRYUP_ADMIN' %}selected{% endif %}>HRyUp Admin</option>
+                        <option value="HRYUP_STAFF" {% if request.GET.role == 'HRYUP_STAFF' %}selected{% endif %}>HRyUp Staff</option>
+                        <option value="CLIENT_MANAGER" {% if request.GET.role == 'CLIENT_MANAGER' %}selected{% endif %}>Client Manager</option>
+                        <option value="CLIENT_EMPLOYEE" {% if request.GET.role == 'CLIENT_EMPLOYEE' %}selected{% endif %}>Client Employee</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    {{ u.get_short_name|default:u.email|make_list|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ u.get_full_name|default:"-" }}</div>
+                                    <div class="text-muted small">{{ u.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ u.get_role_display }}</td>
+                        <td>{{ u.company.name|default:"HRyUp (Internal)" }}</td>
+                        <td>
+                            {% if u.is_active %}
+                                {% include 'partials/status_badge.html' with status='Active' %}
+                            {% else %}
+                                {% include 'partials/status_badge.html' with status='Inactive' %}
+                            {% endif %}
+                        </td>
+                        <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                        <td class="text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-dark text-decoration-none" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% if u.is_active %}
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" data-bs-confirm="true" data-confirm-title="Deactivate User" data-confirm-message="Are you sure you want to deactivate {{ u.email }}? They will not be able to log in." href="#">
+                                            <i class="bi bi-slash-circle me-2"></i>Deactivate
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li>
+                                        <a class="dropdown-item text-success" href="#" data-bs-confirm="true" data-confirm-title="Activate User" data-confirm-message="Are you sure you want to activate {{ u.email }}?" href="#">
+                                            <i class="bi bi-check-circle me-2"></i>Activate
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            {% include 'partials/empty_state.html' with icon='bi-people' title='No Users Found' description='No users match your criteria.' %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer bg-white border-top-0 pt-3 pb-2">
+            {% include 'partials/pagination.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

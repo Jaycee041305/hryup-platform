@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="app-wrapper">
+        {% include 'partials/sidebar.html' %}
+        <div class="sidebar-overlay"></div>
+        
+        {% include 'partials/topbar.html' %}
+        
+        <div class="main-content">
+            <div class="content-wrapper">
+                {% block breadcrumbs %}
+                {% endblock %}
+                
+                {% block app_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    {% include 'partials/confirm_modal.html' %}
+{% endblock %}

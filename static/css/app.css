@@ -1,0 +1,153 @@
+:root {
+    --hryup-navy: #0A1C3A;      /* Deep navy from the logo */
+    --hryup-navy-light: #15325C;
+    --hryup-gold: #F2B11E;      /* Gold/yellow from the logo */
+    --hryup-gold-hover: #D99D1A;
+    --hryup-gray-light: #F8F9FA;
+    --hryup-text-dark: #333333;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--hryup-text-dark);
+}
+
+/* Custom Colors and Buttons */
+.bg-navy {
+    background-color: var(--hryup-navy) !important;
+}
+
+.text-navy {
+    color: var(--hryup-navy) !important;
+}
+
+.text-gold {
+    color: var(--hryup-gold) !important;
+}
+
+.btn-navy {
+    background-color: var(--hryup-navy);
+    color: #ffffff;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-navy:hover {
+    background-color: var(--hryup-navy-light);
+    color: #ffffff;
+}
+
+.btn-gold {
+    background-color: var(--hryup-gold);
+    color: var(--hryup-navy);
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background-color: var(--hryup-gold-hover);
+    color: var(--hryup-navy);
+}
+
+.btn-outline-gold {
+    border: 2px solid var(--hryup-gold);
+    color: var(--hryup-gold);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+    background-color: var(--hryup-gold);
+    color: var(--hryup-navy);
+}
+
+/* Government/Professional Style UI */
+.section-title {
+    font-weight: 700;
+    color: var(--hryup-navy);
+    position: relative;
+    padding-bottom: 10px;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 60px;
+    background-color: var(--hryup-gold);
+}
+
+.service-card {
+    border: none;
+    border-top: 4px solid var(--hryup-navy);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border-top: 4px solid var(--hryup-gold);
+}
+
+.service-icon {
+    font-size: 2.5rem;
+    color: var(--hryup-navy);
+    margin-bottom: 15px;
+}
+
+.hero-section {
+    background-color: var(--hryup-navy);
+    background-image: linear-gradient(135deg, var(--hryup-navy) 0%, var(--hryup-navy-light) 100%);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: rgba(242, 177, 30, 0.05);
+    transform: rotate(30deg);
+}
+
+.navbar-brand img {
+    height: 55px; /* Adjust based on logo proportions */
+    object-fit: contain;
+}
+
+.footer-classic {
+    background-color: var(--hryup-navy);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 60px 0 30px;
+}
+
+.footer-classic a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.footer-classic a:hover {
+    color: var(--hryup-gold);
+}
+
+/* Base App Overrides */
+.sidebar {
+    background-color: var(--hryup-navy);
+}
+.sidebar-nav-item:hover, .sidebar-nav-item.active {
+    background-color: rgba(242, 177, 30, 0.1);
+    border-left: 4px solid var(--hryup-gold);
+}

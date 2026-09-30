@@ -1,0 +1,94 @@
+<aside class="sidebar">
+    <a href="{% url 'dashboard:index' %}" class="brand-logo">
+        <i class="bi bi-briefcase-fill me-2 text-primary"></i>HRyUp
+    </a>
+    
+    <div class="sidebar-nav">
+        {% if user.is_authenticated %}
+            <div class="sidebar-heading">Main</div>
+            <a href="{% url 'dashboard:index' %}" class="sidebar-nav-item">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            
+            {% if user.is_hryup_admin %}
+                <div class="sidebar-heading">HRyUp Admin</div>
+                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item">
+                    <i class="bi bi-building"></i> Clients
+                </a>
+                <a href="{% url 'companies:package_list' %}" class="sidebar-nav-item">
+                    <i class="bi bi-box-seam"></i> Packages
+                </a>
+                <a href="{% url 'accounts:user_list' %}" class="sidebar-nav-item">
+                    <i class="bi bi-people"></i> Staff
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-file-earmark-text"></i> HR Templates
+                </a>
+                <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item">
+                    <i class="bi bi-journal-text"></i> Audit Log
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            {% elif user.is_hryup_staff %}
+                <div class="sidebar-heading">HRyUp Staff</div>
+                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item">
+                    <i class="bi bi-building"></i> My Clients
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-person-plus"></i> Recruitment
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-cash-coin"></i> Payroll
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-headset"></i> Helpdesk
+                </a>
+            {% elif user.is_client_manager %}
+                <div class="sidebar-heading">Client Management</div>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-people"></i> Employees
+                </a>
+                {% if company and company.has_201_files %}
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-folder2-open"></i> 201 Files
+                </a>
+                {% endif %}
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-calendar-check"></i> Attendance
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-airplane"></i> Leave
+                </a>
+                {% if company and company.has_recruitment %}
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-person-plus"></i> Recruitment
+                </a>
+                {% endif %}
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-cash-coin"></i> Payroll
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-headset"></i> Helpdesk
+                </a>
+            {% elif user.is_client_employee %}
+                <div class="sidebar-heading">Employee Self Service</div>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-calendar-check"></i> My Attendance
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-airplane"></i> My Leave
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-file-person"></i> My Documents
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-book"></i> HR Policies
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <i class="bi bi-headset"></i> Helpdesk
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</aside>

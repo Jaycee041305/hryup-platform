@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>201 Documents</h2>
+        <a href="{% url 'documents:create' %}" class="btn btn-primary">Upload Document</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Category</th>
+                <th>File</th>
+                <th>Confidential</th>
+                <th>Uploaded By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td>{{ doc.employee.user.get_full_name }}</td>
+                <td>{{ doc.get_category_display }}</td>
+                <td>{{ doc.file.name }}</td>
+                <td>{{ doc.confidentiality_flag|yesno:"Yes,No" }}</td>
+                <td>{{ doc.uploaded_by.get_full_name }}</td>
+                <td>
+                    <a href="{% url 'documents:download' doc.id %}" class="btn btn-sm btn-success">Download</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-3">No documents found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        <li class="page-item active"><a class="page-link">{{ page_obj.number }}</a></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

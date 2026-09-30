@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Employees</h2>
+    <div class="d-flex justify-content-between mb-3">
+        <form class="d-flex" method="GET">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search by name, pos, dept..." value="{{ request.GET.q }}">
+            <select name="status" class="form-select me-2">
+                <option value="">All Statuses</option>
+                <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                <option value="INACTIVE" {% if request.GET.status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+                <option value="ON_LEAVE" {% if request.GET.status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
+                <option value="TERMINATED" {% if request.GET.status == 'TERMINATED' %}selected{% endif %}>Terminated</option>
+            </select>
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+        </form>
+        <a href="{% url 'employees:create' %}" class="btn btn-primary">Add Employee</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Position</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td>{{ emp.user.get_full_name }}</td>
+                <td>{{ emp.department }}</td>
+                <td>{{ emp.position }}</td>
+                <td>{{ emp.get_status_display }}</td>
+                <td>
+                    <a href="{% url 'employees:detail' emp.id %}" class="btn btn-sm btn-info">View</a>
+                    <a href="{% url 'employees:update' emp.id %}" class="btn btn-sm btn-secondary">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No employees found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        <li class="page-item active"><a class="page-link">{{ page_obj.number }}</a></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

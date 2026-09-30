@@ -1,0 +1,6 @@
+<h1>Acknowledge {{ document.title }}</h1>
+<form method="post">
+    {% csrf_token %}
+    <p>I acknowledge this policy.</p>
+    <button type="submit">Acknowledge</button>
+</form>

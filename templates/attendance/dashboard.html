@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Attendance Dashboard</h2>
+    <div class="card mt-3">
+        <div class="card-body text-center">
+            <h4>Date: {{ today }}</h4>
+            {% if attendance and attendance.time_in %}
+                <p class="text-success">Time In: {{ attendance.time_in|time:"h:i A" }}</p>
+                {% if attendance.time_out %}
+                    <p class="text-primary">Time Out: {{ attendance.time_out|time:"h:i A" }}</p>
+                    <button class="btn btn-secondary" disabled>Shift Completed</button>
+                {% else %}
+                    <form method="post" action="{% url 'attendance:toggle' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning btn-lg">Time Out</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p class="text-muted">You haven't timed in yet today.</p>
+                <form method="post" action="{% url 'attendance:toggle' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg">Time In</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'attendance:list' %}" class="btn btn-info">View Attendance History</a>
+        <a href="{% url 'attendance:summary' %}" class="btn btn-primary">View Monthly Summary</a>
+    </div>
+</div>
+{% endblock %}

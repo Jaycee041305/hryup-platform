@@ -1,0 +1,9 @@
+<h1>Open Vacancies at {{ company.name }}</h1>
+<ul>
+{% for vacancy in vacancies %}
+    <li>
+        {{ vacancy.title }} - {{ vacancy.description }}
+        <a href="{% url 'recruitment:public_apply' company.id vacancy.id %}">Apply</a>
+    </li>
+{% endfor %}
+</ul>

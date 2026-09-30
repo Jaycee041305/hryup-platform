@@ -1,0 +1,77 @@
+{% extends 'base_app.html' %}
+
+{% block title %}{% if object %}Edit Package{% else %}Add Package{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'companies:package_list' %}" class="text-decoration-none">Packages</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% if object %}Edit{% else %}Add{% endif %}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">{% if object %}Edit Package: {{ object.name }}{% else %}Create New Package{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h6 class="text-primary mb-3">Package Details</h6>
+                    <div class="row">
+                        <div class="col-md-8">
+                            {% include 'partials/form_field.html' with field=form.name %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include 'partials/form_field.html' with field=form.price %}
+                        </div>
+                        <div class="col-12">
+                            {% include 'partials/form_field.html' with field=form.description %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.max_employees %}
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-primary mb-3 mt-4">Features & Modules</h6>
+                    <div class="row bg-light p-3 rounded mx-0">
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.has_201_files %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.has_attendance %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.has_leave %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.has_payroll %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.has_recruitment %}
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-primary mb-3 mt-4">Settings</h6>
+                    <div class="row">
+                        <div class="col-12">
+                            {% include 'partials/form_field.html' with field=form.is_active %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'companies:package_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">{% if object %}Save Changes{% else %}Create Package{% endif %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
