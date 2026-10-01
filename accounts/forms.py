@@ -62,9 +62,15 @@ class AdminUserCreateForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        first_name = self.cleaned_data.get('first_name', 'User')
-        # Generate password based on first name
-        password = f"{first_name.capitalize()}123!"
+        last_name = self.cleaned_data.get('last_name', 'User')
+        role = self.cleaned_data.get('role')
+        
+        # Generate password based on role
+        if role == 'HRYUP_STAFF':
+            password = f"{last_name.capitalize()}_staff"
+        else:
+            password = "password123!"
+            
         user.set_password(password)
         if commit:
             user.save()

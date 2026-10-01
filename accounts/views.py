@@ -103,7 +103,7 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixi
     form_class = AdminUserCreateForm
     template_name = 'accounts/user_create.html'
     success_url = reverse_lazy('accounts:user_list')
-    success_message = "User created successfully. Their password is automatically set to Firstname123!"
+    success_message = "User created successfully! (See security rules for default password)"
     
     def test_func(self):
         return self.request.user.role == 'HRYUP_ADMIN'
