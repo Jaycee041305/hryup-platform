@@ -93,9 +93,10 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'core:landing'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1
+AXES_FAILURE_LIMIT = 100
+AXES_COOLOFF_TIME = 0.1
 AXES_LOCKOUT_PARAMETERS = ['username', 'ip_address']
+AXES_ENABLED = False
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@hryup.ph')
