@@ -19,6 +19,14 @@ class EmailAuthenticationForm(AuthenticationForm):
     )
 
 class UserRegistrationForm(UserCreationForm):
+    role = forms.ChoiceField(
+        choices=[
+            ('', '---------'),
+            ('CLIENT_MANAGER', 'Client Manager'),
+            ('CLIENT_EMPLOYEE', 'Client Employee'),
+        ],
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'phone', 'role']
@@ -27,8 +35,40 @@ class UserRegistrationForm(UserCreationForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+class AdminUserCreateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'phone', 'role']
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'e.g. name_staff@hryup.ph'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'role': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get('role')
+        email = cleaned_data.get('email')
+        
+        if role == 'HRYUP_STAFF' and email:
+            if '_staff' not in email.split('@')[0]:
+                self.add_error('email', 'Staff email username must contain "_staff" (e.g. name_staff@domain.com).')
+                
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        first_name = self.cleaned_data.get('first_name', 'User')
+        # Generate password based on first name
+        password = f"{first_name.capitalize()}123!"
+        user.set_password(password)
+        if commit:
+            user.save()
+        return user
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:

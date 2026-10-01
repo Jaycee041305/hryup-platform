@@ -5,7 +5,7 @@ from django.views.generic import TemplateView, UpdateView, ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import User
-from .forms import EmailAuthenticationForm, UserUpdateForm, CustomPasswordResetForm, CustomSetPasswordForm, UserRegistrationForm
+from .forms import EmailAuthenticationForm, UserUpdateForm, CustomPasswordResetForm, CustomSetPasswordForm, UserRegistrationForm, AdminUserCreateForm
 
 class CustomLoginView(LoginView):
     """
@@ -100,10 +100,10 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixi
     Context variables: form
     """
     model = User
-    form_class = UserRegistrationForm
+    form_class = AdminUserCreateForm
     template_name = 'accounts/user_create.html'
     success_url = reverse_lazy('accounts:user_list')
-    success_message = "User created successfully."
+    success_message = "User created successfully. Their password is automatically set to Firstname123!"
     
     def test_func(self):
         return self.request.user.role == 'HRYUP_ADMIN'
