@@ -21,6 +21,12 @@ class EmailAuthenticationForm(AuthenticationForm):
     )
 
 class UserRegistrationForm(UserCreationForm):
+    company_name = forms.CharField(
+        max_length=255, 
+        required=True, 
+        label="Company Name",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your business name'})
+    )
     role = forms.ChoiceField(
         choices=[
             ('', '---------'),
@@ -29,15 +35,48 @@ class UserRegistrationForm(UserCreationForm):
         ],
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'role']
+        fields = ['email', 'first_name', 'last_name', 'phone', 'company_name', 'role']
         widgets = {
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            
+            role = self.cleaned_data.get('role')
+            company_name = self.cleaned_data.get('company_name')
+            
+            if company_name and role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE']:
+                from companies.models import Company
+                from employees.models import Employee
+                import datetime
+                
+                # Check if company exists by name (case-insensitive) to prevent duplicates if possible
+                company = Company.objects.filter(name__iexact=company_name).first()
+                if not company:
+                    company = Company.objects.create(
+                        name=company_name,
+                        email=user.email,
+                        phone=user.phone
+                    )
+                
+                Employee.objects.create(
+                    user=user,
+                    company=company,
+                    department='Management' if role == 'CLIENT_MANAGER' else 'General',
+                    position='Manager' if role == 'CLIENT_MANAGER' else 'Employee',
+                    hire_date=datetime.date.today(),
+                    status=Employee.StatusChoices.ACTIVE
+                )
+        return user
 
 class AdminUserCreateForm(forms.ModelForm):
     company = forms.ModelChoiceField(
@@ -96,7 +135,7 @@ class AdminUserCreateForm(forms.ModelForm):
             
             # Create Employee profile if it's a client role
             if role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE'] and company:
-                from employees.models import Employee, StatusChoices
+                from employees.models import Employee
                 import datetime
                 
                 Employee.objects.create(
@@ -105,7 +144,7 @@ class AdminUserCreateForm(forms.ModelForm):
                     department='Management' if role == 'CLIENT_MANAGER' else 'General',
                     position='Manager' if role == 'CLIENT_MANAGER' else 'Employee',
                     hire_date=datetime.date.today(),
-                    status=StatusChoices.ACTIVE
+                    status=Employee.StatusChoices.ACTIVE
                 )
                 
         return user
