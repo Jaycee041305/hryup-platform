@@ -34,6 +34,9 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
                 context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING').count()
                 context['open_vacancies'] = JobVacancy.objects.filter(company=company, status='Open').count()
                 context['open_tickets'] = Ticket.objects.filter(company=company, status='Open').count()
+                context['recent_employees'] = Employee.objects.filter(company=company, status='ACTIVE').order_by('-created_at')[:5]
+                context['recent_tickets'] = Ticket.objects.filter(company=company).order_by('-created_at')[:5]
+                context['my_company'] = company
 
         elif user.role == 'CLIENT_EMPLOYEE':
             if hasattr(user, 'employee_profile'):
