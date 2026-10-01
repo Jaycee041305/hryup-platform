@@ -8,13 +8,15 @@ class EmailAuthenticationForm(AuthenticationForm):
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter your email',
-            'autofocus': True
+            'autofocus': True,
+            'autocomplete': 'username'
         })
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your password'
+            'placeholder': 'Enter your password',
+            'autocomplete': 'current-password'
         })
     )
 
@@ -38,6 +40,13 @@ class UserRegistrationForm(UserCreationForm):
         }
 
 class AdminUserCreateForm(forms.ModelForm):
+    company = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        empty_label="Select a company...",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'phone', 'role']
@@ -49,21 +58,31 @@ class AdminUserCreateForm(forms.ModelForm):
             'role': forms.Select(attrs={'class': 'form-select'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from companies.models import Company
+        self.fields['company'].queryset = Company.objects.all()
+
     def clean(self):
         cleaned_data = super().clean()
         role = cleaned_data.get('role')
         email = cleaned_data.get('email')
+        company = cleaned_data.get('company')
         
         if role == 'HRYUP_STAFF' and email:
             if '_staff' not in email.split('@')[0]:
                 self.add_error('email', 'Staff email username must contain "_staff" (e.g. name_staff@domain.com).')
                 
+        if role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE'] and not company:
+            self.add_error('company', 'A company is required for client roles.')
+            
         return cleaned_data
 
     def save(self, commit=True):
         user = super().save(commit=False)
         last_name = self.cleaned_data.get('last_name', 'User')
         role = self.cleaned_data.get('role')
+        company = self.cleaned_data.get('company')
         
         # Generate password based on role
         if role == 'HRYUP_STAFF':
@@ -74,6 +93,21 @@ class AdminUserCreateForm(forms.ModelForm):
         user.set_password(password)
         if commit:
             user.save()
+            
+            # Create Employee profile if it's a client role
+            if role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE'] and company:
+                from employees.models import Employee, StatusChoices
+                import datetime
+                
+                Employee.objects.create(
+                    user=user,
+                    company=company,
+                    department='Management' if role == 'CLIENT_MANAGER' else 'General',
+                    position='Manager' if role == 'CLIENT_MANAGER' else 'Employee',
+                    hire_date=datetime.date.today(),
+                    status=StatusChoices.ACTIVE
+                )
+                
         return user
 
 class UserUpdateForm(forms.ModelForm):
