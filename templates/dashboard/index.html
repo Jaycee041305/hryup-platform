@@ -41,6 +41,62 @@
             </div>
         </div>
     </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-navy">HRyUp Staff</h5>
+                    <a href="{% url 'accounts:user_create' %}" class="btn btn-sm btn-navy">+ Add Staff</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for staff in staff_members %}
+                        <div class="list-group-item px-4 py-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold">{{ staff.get_full_name }}</h6>
+                                <span class="badge bg-light text-dark border">{{ staff.email }}</span>
+                            </div>
+                            <small class="text-muted d-block mb-2">Assigned Clients: 
+                                {% for assignment in staff.staff_assignments.all %}
+                                    {{ assignment.company.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    <span class="text-warning">No clients assigned yet</span>
+                                {% endfor %}
+                            </small>
+                        </div>
+                        {% empty %}
+                        <div class="p-4 text-center text-muted">No staff members found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-navy">Recent Client Companies</h5>
+                    <a href="{% url 'companies:list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for company in recent_companies %}
+                        <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ company.name }}</h6>
+                                <small class="text-muted">Registered: {{ company.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <a href="{% url 'companies:staff_assignment' company.pk %}" class="btn btn-sm btn-outline-primary">Assign Staff</a>
+                        </div>
+                        {% empty %}
+                        <div class="p-4 text-center text-muted">No client companies registered yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
 
     <!-- CLIENT MANAGER DASHBOARD -->

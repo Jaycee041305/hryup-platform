@@ -19,9 +19,13 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         if user.role == 'HRYUP_ADMIN':
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
             context['total_clients'] = Company.objects.count()
             context['active_subscriptions'] = Subscription.objects.filter(status='ACTIVE').count()
             context['open_tickets'] = Ticket.objects.filter(status='Open').count()
+            context['staff_members'] = User.objects.filter(role='HRYUP_STAFF').prefetch_related('staff_assignments__company')
+            context['recent_companies'] = Company.objects.order_by('-created_at')[:5]
             
         elif user.role == 'CLIENT_MANAGER':
             if hasattr(user, 'employee_profile'):
