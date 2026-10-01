@@ -267,44 +267,169 @@
 
     <!-- HRYUP STAFF DASHBOARD -->
     {% if user.role == 'HRYUP_STAFF' %}
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card bg-navy text-white h-100 shadow-sm border-0 rounded-3">
-                <div class="card-body">
-                    <h6 class="text-white-50 text-uppercase fw-bold mb-2">Pending Leave Requests</h6>
-                    <h2 class="display-5 fw-bold mb-0">{{ pending_leave|default:0 }}</h2>
-                    <p class="mb-0 mt-2 small text-white-50">Across all assigned clients</p>
+    <div class="row g-4 mb-4 mt-2">
+        <div class="col-md-4">
+            <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-white-50 text-uppercase fw-bold mb-0 tracking-wide">Pending Leave</h6>
+                        <i class="bi bi-calendar-x fs-3 text-white-50"></i>
+                    </div>
+                    <h2 class="display-4 fw-bolder mb-0">{{ pending_leave|default:0 }}</h2>
+                    <p class="mb-0 mt-2 small text-white-50"><i class="bi bi-diagram-3 me-1"></i> Across all clients</p>
+                </div>
+                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
+                    <i class="bi bi-calendar-x" style="font-size: 8rem;"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card bg-gold text-navy h-100 shadow-sm border-0 rounded-3">
-                <div class="card-body">
-                    <h6 class="text-navy text-uppercase fw-bold mb-2" style="opacity: 0.7;">Open Tickets</h6>
-                    <h2 class="display-5 fw-bold mb-0">{{ open_tickets|default:0 }}</h2>
-                    <p class="mb-0 mt-2 small text-navy" style="opacity: 0.7;">Across all assigned clients</p>
+        <div class="col-md-4">
+            <div class="card bg-gold text-navy h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-navy text-uppercase fw-bold mb-0 tracking-wide" style="opacity: 0.7;">Open Tickets</h6>
+                        <i class="bi bi-headset fs-3 text-navy" style="opacity: 0.4;"></i>
+                    </div>
+                    <h2 class="display-4 fw-bolder mb-0">{{ open_tickets|default:0 }}</h2>
+                    <p class="mb-0 mt-2 small text-navy" style="opacity: 0.7;"><i class="bi bi-diagram-3 me-1"></i> Across all clients</p>
+                </div>
+                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
+                    <i class="bi bi-headset" style="font-size: 8rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-white-50 text-uppercase fw-bold mb-0 tracking-wide">Assigned Clients</h6>
+                        <i class="bi bi-building fs-3 text-white-50"></i>
+                    </div>
+                    <h2 class="display-4 fw-bolder mb-0">{{ assigned_companies|length }}</h2>
+                    <p class="mb-0 mt-2 small text-white-50"><i class="bi bi-person-workspace me-1"></i> Your portfolio</p>
+                </div>
+                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
+                    <i class="bi bi-building" style="font-size: 8rem;"></i>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-header bg-white border-bottom py-3">
-            <h5 class="mb-0 fw-bold text-navy">Assigned Clients</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="list-group list-group-flush">
-                {% for company in assigned_companies %}
-                <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1 fw-bold">{{ company.name }}</h6>
-                        <small class="text-muted">{{ company.company_size|title }} Enterprise</small>
-                    </div>
-                    <a href="{% url 'companies:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">View Client</a>
+    <div class="row g-4 mb-4">
+        <!-- Operations Command Center -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                    <h5 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-grid-1x2 text-primary"></i> Operations Command Center
+                    </h5>
+                    <p class="text-muted small mb-0 mt-1">Manage core HR services for your assigned clients.</p>
                 </div>
-                {% empty %}
-                <div class="p-4 text-center text-muted">You are not assigned to any clients yet.</div>
-                {% endfor %}
+                <div class="card-body px-4 pb-4 pt-2">
+                    <div class="row g-3">
+                        <!-- Module 1: Recruitment -->
+                        <div class="col-md-4">
+                            <a href="{% url 'recruitment:pipeline' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-primary"><i class="bi bi-person-lines-fill fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">Recruitment</h6>
+                                    <small class="text-muted">Screening & Pipeline</small>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- Module 2: Onboarding -->
+                        <div class="col-md-4">
+                            <a href="{% url 'onboarding:tracker_list' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-success"><i class="bi bi-door-open fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">Onboarding</h6>
+                                    <small class="text-muted">New Hire Tracker</small>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- Module 3: 201 Files -->
+                        <div class="col-md-4">
+                            <a href="{% url 'employees:list' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-info"><i class="bi bi-folder2-open fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">201 Files</h6>
+                                    <small class="text-muted">Employee Records</small>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- Module 4: Attendance & Leave -->
+                        <div class="col-md-4">
+                            <a href="{% url 'leave:manager_queue' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-warning"><i class="bi bi-calendar2-check fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">Time & Leave</h6>
+                                    <small class="text-muted">Requests & Attendance</small>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- Module 5: Payroll -->
+                        <div class="col-md-4">
+                            <a href="{% url 'payroll:period_list' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-secondary"><i class="bi bi-cash-stack fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">Payroll Assist</h6>
+                                    <small class="text-muted">Compile & Export</small>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- Module 6: Helpdesk -->
+                        <div class="col-md-4">
+                            <a href="{% url 'helpdesk:ticket_list' %}" class="text-decoration-none">
+                                <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
+                                    <div class="mb-2 text-danger"><i class="bi bi-chat-square-text fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">HR Helpdesk</h6>
+                                    <small class="text-muted">Employee Inquiries</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Clients Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                    <h5 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
+                        <i class="bi bi-buildings text-gold"></i> Client Portfolio
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush rounded-4 pb-2 mt-2">
+                        {% for company in assigned_companies %}
+                        <div class="list-group-item px-4 py-3 border-light transition-hover">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-light text-navy d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold text-dark">{{ company.name }}</h6>
+                                        <div class="text-muted small">
+                                            <span class="badge bg-light text-secondary border">{{ company.company_size|title }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="{% url 'companies:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm transition-hover">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="p-5 text-center">
+                            <div class="display-1 text-light mb-3"><i class="bi bi-building-x"></i></div>
+                            <h6 class="text-muted">No clients assigned</h6>
+                            <p class="small text-muted mb-0">The Admin has not assigned any clients to your portfolio yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
