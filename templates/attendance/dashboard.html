@@ -10,19 +10,17 @@
                 <p class="text-success">Time In: {{ attendance.time_in|time:"h:i A" }}</p>
                 {% if attendance.time_out %}
                     <p class="text-primary">Time Out: {{ attendance.time_out|time:"h:i A" }}</p>
-                    <button class="btn btn-secondary" disabled>Shift Completed</button>
+                    <button class="btn btn-secondary rounded-pill px-4" disabled><i class="bi bi-check-all me-2"></i>Shift Completed</button>
                 {% else %}
-                    <form method="post" action="{% url 'attendance:toggle' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-warning btn-lg">Time Out</button>
-                    </form>
+                    <a href="{% url 'attendance:qr_scanner' %}" class="btn btn-warning btn-lg rounded-pill px-5 shadow-sm">
+                        <i class="bi bi-qr-code-scan me-2"></i> Scan QR to Time Out
+                    </a>
                 {% endif %}
             {% else %}
-                <p class="text-muted">You haven't timed in yet today.</p>
-                <form method="post" action="{% url 'attendance:toggle' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-lg">Time In</button>
-                </form>
+                <p class="text-muted mb-4">You haven't timed in yet today. Scan the company QR code to log your attendance.</p>
+                <a href="{% url 'attendance:qr_scanner' %}" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm">
+                    <i class="bi bi-qr-code-scan me-2"></i> Scan QR to Time In
+                </a>
             {% endif %}
         </div>
     </div>
