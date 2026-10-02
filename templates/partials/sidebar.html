@@ -82,9 +82,12 @@
             {% endif %}
             
             <div class="mt-4 mb-2">
-                <a href="{% url 'accounts:logout' %}" class="sidebar-nav-item text-danger">
-                    <i class="bi bi-box-arrow-right"></i> Sign Out
-                </a>
+                <form action="{% url 'accounts:logout' %}" method="post" class="m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-nav-item text-danger border-0 bg-transparent w-100 text-start">
+                        <i class="bi bi-box-arrow-right"></i> Sign Out
+                    </button>
+                </form>
             </div>
         {% endif %}
     </div>
