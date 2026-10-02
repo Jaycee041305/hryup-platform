@@ -49,7 +49,7 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
             context['assigned_companies'] = [a.company for a in user.staff_assignments.select_related('company')]
             assigned_ids = [c.id for c in context['assigned_companies']]
             context['open_tickets'] = Ticket.objects.filter(company_id__in=assigned_ids, status='Open').count()
-            context['pending_leave'] = LeaveRequest.objects.filter(company_id__in=assigned_ids, status='PENDING').count()
+            context['pending_clients'] = Company.objects.filter(is_active=True, staff_assignments__isnull=True).distinct().count()
 
         return context
 

@@ -504,14 +504,14 @@
             <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-white-50 text-uppercase fw-bold mb-0 tracking-wide">Pending Leave</h6>
-                        <i class="bi bi-calendar-x fs-3 text-white-50"></i>
+                        <h6 class="text-white-50 text-uppercase fw-bold mb-0 tracking-wide">Pending Clients</h6>
+                        <i class="bi bi-building-exclamation fs-3 text-white-50"></i>
                     </div>
-                    <h2 class="display-4 fw-bolder mb-0">{{ pending_leave|default:0 }}</h2>
-                    <p class="mb-0 mt-2 small text-white-50"><i class="bi bi-diagram-3 me-1"></i> Across all clients</p>
+                    <h2 class="display-4 fw-bolder mb-0">{{ pending_clients|default:0 }}</h2>
+                    <p class="mb-0 mt-2 small text-white-50"><i class="bi bi-person-x me-1"></i> Awaiting staff assignment</p>
                 </div>
                 <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
-                    <i class="bi bi-calendar-x" style="font-size: 8rem;"></i>
+                    <i class="bi bi-building-exclamation" style="font-size: 8rem;"></i>
                 </div>
             </div>
         </div>
