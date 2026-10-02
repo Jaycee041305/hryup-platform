@@ -9,9 +9,14 @@
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <h2 class="mb-0 text-navy fw-bold">Welcome back, {{ user.get_short_name }}!</h2>
-            <span class="badge bg-gold text-navy fs-6">{{ user.get_role_display }}</span>
+        <div>
+            <h2 class="mb-1 text-navy fw-bold">Welcome back, {{ user.get_short_name }}!</h2>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-gold text-navy fs-6">{{ user.get_role_display }}</span>
+                {% if user.employee_profile and user.employee_profile.company %}
+                <span class="text-secondary fw-medium ms-2 border-start ps-3 border-2"><i class="bi bi-building me-1"></i> {{ user.employee_profile.company.name }}</span>
+                {% endif %}
+            </div>
         </div>
         
         <div>
@@ -19,12 +24,6 @@
             <a href="{% url 'attendance:qr_scanner' %}" class="btn btn-navy shadow-sm rounded-pill px-4">
                 <i class="bi bi-qr-code-scan me-2"></i> Scan Company QR to Time In
             </a>
-            {% endif %}
-            
-            {% if user.role == 'CLIENT_MANAGER' %}
-            <button class="btn btn-navy shadow-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#myQrModal">
-                <i class="bi bi-qr-code me-2"></i> Company Attendance QR
-            </button>
             {% endif %}
         </div>
     </div>
@@ -244,13 +243,13 @@
                 </div>
                 <div class="card-body px-4 pb-4 pt-2">
                     <div class="row g-3">
-                        <!-- Module 1: Recruitment -->
+                        <!-- Module 1: Attendance Logs -->
                         <div class="col-md-4">
-                            <a href="{% url 'recruitment:vacancy_list' %}" class="text-decoration-none">
+                            <a href="{% url 'attendance:list' %}" class="text-decoration-none">
                                 <div class="card h-100 border border-light bg-light rounded-3 transition-hover text-center p-3">
-                                    <div class="mb-2 text-primary"><i class="bi bi-person-vcard fs-1"></i></div>
-                                    <h6 class="fw-bold text-dark mb-1">Recruitment</h6>
-                                    <small class="text-muted">Review Shortlists</small>
+                                    <div class="mb-2 text-primary"><i class="bi bi-calendar2-check fs-1"></i></div>
+                                    <h6 class="fw-bold text-dark mb-1">Attendance Logs</h6>
+                                    <small class="text-muted">Monitor Time In/Out</small>
                                 </div>
                             </a>
                         </div>
@@ -660,53 +659,4 @@
     {% endif %}
 
 </div>
-
-{% if user.role == 'CLIENT_MANAGER' %}
-<!-- Company QR Code Modal -->
-<div class="modal fade" id="myQrModal" tabindex="-1" aria-labelledby="myQrModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header border-0 bg-navy text-white text-center d-block position-relative pt-4 pb-3">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-                <h5 class="modal-title fw-bold" id="myQrModalLabel"><i class="bi bi-qr-code me-2"></i>Company Attendance QR</h5>
-            </div>
-            <div class="modal-body text-center p-4">
-                <div class="bg-light rounded-4 p-3 d-inline-block shadow-sm mb-3">
-                    <div id="qrcode-container"></div>
-                </div>
-                <h6 class="fw-bold text-dark mb-1">{{ user.employee_profile.company.name }}</h6>
-                <p class="text-muted small mb-0">Daily Attendance</p>
-                <p class="text-muted small mt-3 mb-0" style="font-size: 0.75rem;">Employees can scan this code to log their time in and out.</p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-{% endblock %}
-
-{% block extra_js %}
-{% if user.role == 'CLIENT_MANAGER' and user.employee_profile.company.attendance_qr_token %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const qrModal = document.getElementById('myQrModal');
-        if (qrModal) {
-            qrModal.addEventListener('shown.bs.modal', function () {
-                const container = document.getElementById('qrcode-container');
-                // Only generate if it hasn't been generated yet
-                if (container.innerHTML.trim() === '') {
-                    new QRCode(container, {
-                        text: "{{ user.employee_profile.company.attendance_qr_token }}",
-                        width: 200,
-                        height: 200,
-                        colorDark : "#1e293b",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                }
-            });
-        }
-    });
-</script>
-{% endif %}
 {% endblock %}
