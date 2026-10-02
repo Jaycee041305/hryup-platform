@@ -11,7 +11,7 @@ class Employee(TenantModel):
         TERMINATED = 'TERMINATED', 'Terminated'
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='employee_profile')
-    qr_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    qr_token = models.UUIDField(default=uuid.uuid4, editable=False)
     department = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     hire_date = models.DateField()
