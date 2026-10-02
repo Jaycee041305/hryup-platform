@@ -39,6 +39,16 @@
                     {% endif %}
                     <p class="mb-0"><i class="bi bi-calendar3 text-muted me-2"></i> Joined {{ user.date_joined|date:"M Y" }}</p>
                 </div>
+                
+                {% if user.role == 'CLIENT_EMPLOYEE' and user.employee_profile %}
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="text-muted small mb-2">My Attendance QR</p>
+                    <div class="bg-light rounded-4 p-2 d-inline-block shadow-sm">
+                        <div id="profile-qrcode-container"></div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -86,4 +96,25 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.role == 'CLIENT_EMPLOYEE' and user.employee_profile %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('profile-qrcode-container');
+        if (container && container.innerHTML.trim() === '') {
+            new QRCode(container, {
+                text: "{{ user.employee_profile.qr_token }}",
+                width: 150,
+                height: 150,
+                colorDark : "#1e293b",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}
