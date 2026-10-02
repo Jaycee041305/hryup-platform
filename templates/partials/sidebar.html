@@ -12,11 +12,8 @@
             
             {% if user.is_hryup_admin %}
                 <div class="sidebar-heading">HRyUp Admin</div>
-                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item">
+                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item {% if request.resolver_match.view_name == 'companies:company_list' %}active{% endif %}">
                     <i class="bi bi-building"></i> Clients
-                </a>
-                <a href="{% url 'companies:package_list' %}" class="sidebar-nav-item">
-                    <i class="bi bi-box-seam"></i> Packages
                 </a>
                 <a href="{% url 'accounts:user_list' %}" class="sidebar-nav-item">
                     <i class="bi bi-people"></i> Staff
