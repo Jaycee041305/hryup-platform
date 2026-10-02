@@ -52,3 +52,34 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
             context['pending_leave'] = LeaveRequest.objects.filter(company_id__in=assigned_ids, status='PENDING').count()
 
         return context
+
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
+
+class ClientDashboardView(LoginRequiredMixin, TemplateView):
+    """
+    Operations Command Center for a specific client (used by Staff/Admin).
+    Template: dashboard/client_dashboard.html
+    """
+    template_name = 'dashboard/client_dashboard.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.role not in ['HRYUP_ADMIN', 'HRYUP_STAFF']:
+            raise PermissionDenied("You do not have permission to view this client dashboard.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        company_id = self.kwargs.get('company_id')
+        company = get_object_or_404(Company, id=company_id)
+        
+        # Verify staff assignment if not admin
+        if self.request.user.role == 'HRYUP_STAFF':
+            if not self.request.user.staff_assignments.filter(company=company).exists():
+                raise PermissionDenied("You are not assigned to this client.")
+                
+        context['client_company'] = company
+        context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE').count()
+        context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING').count()
+        context['open_tickets'] = Ticket.objects.filter(company=company, status='Open').count()
+        return context
