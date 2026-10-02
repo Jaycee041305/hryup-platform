@@ -51,7 +51,6 @@
                         <th>Company Name</th>
                         <th>Industry</th>
                         <th>Size</th>
-                        <th>Subscription</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -65,14 +64,6 @@
                         </td>
                         <td>{{ company.industry|default:"-" }}</td>
                         <td>{{ company.get_size_display|default:"-" }}</td>
-                        <td>
-                            {% if company.active_subscription %}
-                                <span class="badge bg-primary">{{ company.active_subscription.package.name }}</span>
-                                <div class="text-muted small mt-1">Exp: {{ company.active_subscription.end_date|date:"M d, Y" }}</div>
-                            {% else %}
-                                <span class="badge bg-secondary">No Active Plan</span>
-                            {% endif %}
-                        </td>
                         <td>
                             {% if company.is_active %}
                                 {% include 'partials/status_badge.html' with status='Active' %}

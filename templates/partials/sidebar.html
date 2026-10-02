@@ -18,14 +18,11 @@
                 <a href="{% url 'accounts:user_list' %}" class="sidebar-nav-item">
                     <i class="bi bi-people"></i> Staff
                 </a>
-                <a href="#" class="sidebar-nav-item">
-                    <i class="bi bi-file-earmark-text"></i> HR Templates
-                </a>
                 <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item">
                     <i class="bi bi-journal-text"></i> Audit Log
                 </a>
-                <a href="#" class="sidebar-nav-item">
-                    <i class="bi bi-gear"></i> Settings
+                <a href="{% url 'accounts:logout' %}" class="sidebar-nav-item text-danger">
+                    <i class="bi bi-box-arrow-right"></i> Sign Out
                 </a>
             {% elif user.is_hryup_staff %}
                 <div class="sidebar-heading">HRyUp Staff</div>
