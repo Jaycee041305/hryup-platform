@@ -16,9 +16,17 @@
                 <span class="badge bg-gold text-navy fs-6">Client: {{ client_company.name }}</span>
             </div>
         </div>
-        <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary rounded-pill px-4">
-            <i class="bi bi-arrow-left me-2"></i> Back to Clients
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i> Back to Clients
+            </a>
+            <form action="{% url 'accounts:logout' %}" method="post" class="m-0 p-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger shadow-sm rounded-pill px-4">
+                    <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
