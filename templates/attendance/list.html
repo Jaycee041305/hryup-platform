@@ -6,6 +6,9 @@
     <table class="table table-striped mt-3">
         <thead>
             <tr>
+                {% if user.role != 'CLIENT_EMPLOYEE' %}
+                <th>Employee</th>
+                {% endif %}
                 <th>Date</th>
                 <th>Time In</th>
                 <th>Time Out</th>
@@ -15,14 +18,37 @@
         <tbody>
             {% for record in attendances %}
             <tr>
+                {% if user.role != 'CLIENT_EMPLOYEE' %}
+                <td class="fw-medium text-navy">{{ record.employee.user.get_full_name }}</td>
+                {% endif %}
                 <td>{{ record.date }}</td>
-                <td>{{ record.time_in|time:"h:i A"|default:"-" }}</td>
-                <td>{{ record.time_out|time:"h:i A"|default:"-" }}</td>
-                <td>{{ record.get_review_status_display }}</td>
+                <td>
+                    {% if record.time_in %}
+                        <span class="badge bg-light text-secondary border"><i class="bi bi-box-arrow-in-right me-1"></i>{{ record.time_in|time:"h:i A" }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if record.time_out %}
+                        <span class="badge bg-light text-secondary border"><i class="bi bi-box-arrow-left me-1"></i>{{ record.time_out|time:"h:i A" }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if record.review_status == 'APPROVED' %}
+                        <span class="badge bg-success rounded-pill px-3">Approved</span>
+                    {% elif record.review_status == 'PENDING' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3">Pending</span>
+                    {% else %}
+                        <span class="badge bg-danger rounded-pill px-3">{{ record.review_status|title }}</span>
+                    {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" class="text-center">No attendance records found.</td>
+                <td colspan="{% if user.role != 'CLIENT_EMPLOYEE' %}5{% else %}4{% endif %}" class="text-center py-4 text-muted">No attendance records found.</td>
             </tr>
             {% endfor %}
         </tbody>

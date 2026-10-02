@@ -59,35 +59,81 @@ def toggle_attendance(request):
 
 @login_required
 def attendance_list(request):
-    try:
-        employee = request.user.employee_profile
-    except Employee.DoesNotExist:
-        messages.error(request, "Employee profile not found.")
-        return redirect('core:landing')
-
-    attendances = Attendance.objects.filter(employee=employee, is_deleted=False).order_by('-date')
+    user = request.user
+    
+    # Base queryset
+    qs = Attendance.objects.filter(is_deleted=False)
+    
+    if user.role == 'CLIENT_EMPLOYEE':
+        if not hasattr(user, 'employee_profile'):
+            messages.error(request, "Employee profile not found.")
+            return redirect('core:landing')
+        qs = qs.filter(employee=user.employee_profile)
+        
+    elif user.role == 'CLIENT_MANAGER':
+        if not hasattr(user, 'employee_profile'):
+            messages.error(request, "Manager profile not found.")
+            return redirect('core:landing')
+        qs = qs.filter(company=user.employee_profile.company)
+        
+    elif user.role == 'HRYUP_STAFF':
+        company_id = request.GET.get('company')
+        if company_id:
+            qs = qs.filter(company_id=company_id, company__staff_assignments__staff=user)
+        else:
+            assigned_companies = user.staff_assignments.values_list('company_id', flat=True)
+            qs = qs.filter(company_id__in=assigned_companies)
+            
+    elif user.role == 'HRYUP_ADMIN':
+        company_id = request.GET.get('company')
+        if company_id:
+            qs = qs.filter(company_id=company_id)
+            
+    attendances = qs.order_by('-date', '-time_in')
     return render(request, 'attendance/list.html', {'attendances': attendances})
 
 @login_required
 def monthly_summary(request):
-    try:
-        employee = request.user.employee_profile
-    except Employee.DoesNotExist:
-        messages.error(request, "Employee profile not found.")
-        return redirect('core:landing')
-
+    user = request.user
+    
     import calendar
     from datetime import datetime
 
     month = int(request.GET.get('month', timezone.localdate().month))
     year = int(request.GET.get('year', timezone.localdate().year))
 
-    attendances = Attendance.objects.filter(
-        employee=employee,
+    qs = Attendance.objects.filter(
         date__year=year,
         date__month=month,
         is_deleted=False
     )
+    
+    if user.role == 'CLIENT_EMPLOYEE':
+        if not hasattr(user, 'employee_profile'):
+            messages.error(request, "Employee profile not found.")
+            return redirect('core:landing')
+        qs = qs.filter(employee=user.employee_profile)
+        
+    elif user.role == 'CLIENT_MANAGER':
+        if not hasattr(user, 'employee_profile'):
+            messages.error(request, "Manager profile not found.")
+            return redirect('core:landing')
+        qs = qs.filter(company=user.employee_profile.company)
+        
+    elif user.role == 'HRYUP_STAFF':
+        company_id = request.GET.get('company')
+        if company_id:
+            qs = qs.filter(company_id=company_id, company__staff_assignments__staff=user)
+        else:
+            assigned_companies = user.staff_assignments.values_list('company_id', flat=True)
+            qs = qs.filter(company_id__in=assigned_companies)
+            
+    elif user.role == 'HRYUP_ADMIN':
+        company_id = request.GET.get('company')
+        if company_id:
+            qs = qs.filter(company_id=company_id)
+            
+    attendances = qs.order_by('employee', 'date')
     
     total_days = attendances.count()
 

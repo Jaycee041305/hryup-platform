@@ -5,7 +5,13 @@
     <h2>Monthly Summary - {{ month }}/{{ year }}</h2>
     <div class="card mt-3">
         <div class="card-body">
-            <h5 class="card-title">Total Days Present: {{ total_days }}</h5>
+            <h5 class="card-title">
+                {% if user.role == 'CLIENT_EMPLOYEE' %}
+                    Total Days Present: {{ total_days }}
+                {% else %}
+                    Total Records: {{ total_days }}
+                {% endif %}
+            </h5>
             <!-- Add more summary details as needed -->
         </div>
     </div>
@@ -13,6 +19,9 @@
     <table class="table table-bordered mt-4">
         <thead>
             <tr>
+                {% if user.role != 'CLIENT_EMPLOYEE' %}
+                <th>Employee</th>
+                {% endif %}
                 <th>Date</th>
                 <th>Time In</th>
                 <th>Time Out</th>
@@ -21,13 +30,16 @@
         <tbody>
             {% for record in attendances %}
             <tr>
+                {% if user.role != 'CLIENT_EMPLOYEE' %}
+                <td class="fw-medium">{{ record.employee.user.get_full_name }}</td>
+                {% endif %}
                 <td>{{ record.date }}</td>
                 <td>{{ record.time_in|time:"h:i A"|default:"-" }}</td>
                 <td>{{ record.time_out|time:"h:i A"|default:"-" }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3" class="text-center">No attendance records for this month.</td>
+                <td colspan="{% if user.role != 'CLIENT_EMPLOYEE' %}4{% else %}3{% endif %}" class="text-center text-muted py-3">No attendance records for this month.</td>
             </tr>
             {% endfor %}
         </tbody>
