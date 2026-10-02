@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from core.mixins import HRyUpAdminRequiredMixin as AdminRequiredMixin, HRyUpStaffRequiredMixin as StaffRequiredMixin
@@ -62,6 +62,25 @@ class CompanyUpdateView(AdminRequiredMixin, UpdateView):
     
     def get_success_url(self):
         return reverse_lazy('companies:detail', kwargs={'pk': self.object.pk})
+
+class CompanyDeleteView(AdminRequiredMixin, DeleteView):
+    """
+    Admin only.
+    Template: companies/company_confirm_delete.html
+    """
+    model = Company
+    template_name = 'companies/company_confirm_delete.html'
+    success_url = reverse_lazy('companies:company_list')
+    
+    def form_valid(self, form):
+        from django.contrib import messages
+        from django.http import HttpResponseRedirect
+        company = self.get_object()
+        
+        company.delete()
+        
+        messages.success(self.request, f"Company '{company.name}' was successfully deleted.")
+        return HttpResponseRedirect(self.success_url)
 
 class PackageListView(AdminRequiredMixin, ListView):
     """

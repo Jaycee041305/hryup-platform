@@ -81,7 +81,12 @@
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'companies:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'companies:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                {% if user.is_hryup_admin %}
+                                <a href="{% url 'companies:company_delete' company.pk %}" class="btn btn-sm btn-outline-danger" title="Delete Company"><i class="bi bi-trash"></i></a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
