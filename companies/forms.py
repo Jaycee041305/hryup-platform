@@ -56,3 +56,15 @@ class SubscriptionForm(forms.ModelForm):
             'billing_cycle': forms.Select(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+from accounts.models import StaffAssignment
+
+class StaffAssignmentForm(forms.ModelForm):
+    class Meta:
+        model = StaffAssignment
+        fields = ['staff', 'is_primary']
+        widgets = {
+            'staff': forms.Select(attrs={'class': 'form-select'}),
+            'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+

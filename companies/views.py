@@ -5,6 +5,7 @@ from core.mixins import HRyUpAdminRequiredMixin as AdminRequiredMixin, HRyUpStaf
 from .models import Company, SubscriptionPackage, Subscription
 from .forms import CompanyForm, SubscriptionPackageForm, SubscriptionForm
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 
 User = get_user_model()
 
@@ -137,11 +138,15 @@ class SubscriptionCreateView(AdminRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse_lazy('companies:detail', kwargs={'pk': self.kwargs['company_id']})
 
+from accounts.models import StaffAssignment
+from .forms import StaffAssignmentForm
+from django.shortcuts import redirect
+
 class StaffAssignmentView(AdminRequiredMixin, TemplateView):
     """
     Admin only.
     Template: companies/staff_assignment.html
-    Context: company, assignments, available_staff
+    Context: company, assignments, form
     """
     template_name = 'companies/staff_assignment.html'
     
@@ -149,6 +154,34 @@ class StaffAssignmentView(AdminRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         company = get_object_or_404(Company, pk=self.kwargs['company_id'])
         context['company'] = company
-        context['assignments'] = []
-        context['available_staff'] = User.objects.filter(is_staff=True)
+        context['assignments'] = company.staff_assignments.select_related('staff').all()
+        if 'form' not in context:
+            context['form'] = StaffAssignmentForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        company = get_object_or_404(Company, pk=self.kwargs['company_id'])
+        
+        # Handle remove assignment
+        if 'remove_assignment' in request.POST:
+            assignment_id = request.POST.get('remove_assignment')
+            StaffAssignment.objects.filter(id=assignment_id, company=company).delete()
+            messages.success(request, "Staff assignment removed.")
+            return redirect('companies:staff_assignment', company_id=company.pk)
+            
+        # Handle add assignment
+        form = StaffAssignmentForm(request.POST)
+        if form.is_valid():
+            assignment = form.save(commit=False)
+            assignment.company = company
+            
+            # Check if already assigned
+            if StaffAssignment.objects.filter(staff=assignment.staff, company=company).exists():
+                messages.error(request, f"{assignment.staff.get_full_name()} is already assigned to this company.")
+            else:
+                assignment.save()
+                messages.success(request, f"{assignment.staff.get_full_name()} assigned successfully.")
+                
+            return redirect('companies:staff_assignment', company_id=company.pk)
+            
+        return self.render_to_response(self.get_context_data(form=form))
