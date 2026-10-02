@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import uuid
 from core.models import TenantModel
 
 class Employee(TenantModel):
@@ -10,6 +11,7 @@ class Employee(TenantModel):
         TERMINATED = 'TERMINATED', 'Terminated'
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='employee_profile')
+    qr_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     department = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     hire_date = models.DateField()

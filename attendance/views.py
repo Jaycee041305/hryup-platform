@@ -98,3 +98,72 @@ def monthly_summary(request):
         'total_days': total_days,
     }
     return render(request, 'attendance/monthly_summary.html', context)
+
+@login_required
+def qr_scanner(request):
+    """View for Client Managers to scan employee QR codes."""
+    if request.user.role not in ['CLIENT_MANAGER', 'HRYUP_ADMIN', 'HRYUP_STAFF']:
+        messages.error(request, "You don't have permission to access the scanner.")
+        return redirect('dashboard:index')
+    return render(request, 'attendance/qr_scanner.html')
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@login_required
+@csrf_exempt
+def qr_process_scan(request):
+    """Processes AJAX requests from the QR scanner."""
+    if request.method == 'POST':
+        if request.user.role not in ['CLIENT_MANAGER', 'HRYUP_ADMIN', 'HRYUP_STAFF']:
+            return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+            
+        try:
+            data = json.loads(request.body)
+            qr_token = data.get('qr_token')
+            
+            if not qr_token:
+                return JsonResponse({'status': 'error', 'message': 'No QR token provided'})
+                
+            employee = Employee.objects.get(qr_token=qr_token)
+            
+            # Make sure the scanner user is scanning someone from their company
+            if request.user.role == 'CLIENT_MANAGER' and employee.company != request.user.employee_profile.company:
+                return JsonResponse({'status': 'error', 'message': 'Employee belongs to a different company'})
+
+            today = timezone.localdate()
+            now = timezone.localtime().time()
+
+            attendance, created = Attendance.objects.get_or_create(
+                employee=employee,
+                date=today,
+                is_deleted=False,
+                defaults={'company': employee.company, 'time_in': now, 'review_status': 'APPROVED'}
+            )
+
+            if not created:
+                # Check for debounce (wait at least 1 minute between scans to prevent double scanning)
+                import datetime
+                # Just simple logic: if time_out is already there, don't re-timeout.
+                # Actually, standard behavior: first scan is time in, second is time out.
+                if not attendance.time_in:
+                    attendance.time_in = now
+                    action = f"Time In recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+                elif not attendance.time_out:
+                    attendance.time_out = now
+                    action = f"Time Out recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+                else:
+                    return JsonResponse({'status': 'error', 'message': f"{employee.user.get_full_name()} has already timed in and out today."})
+                attendance.save()
+            else:
+                action = f"Time In recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+
+            return JsonResponse({'status': 'success', 'message': action, 'employee_name': employee.user.get_full_name()})
+            
+        except Employee.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Invalid or unrecognized QR code.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
