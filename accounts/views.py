@@ -15,6 +15,16 @@ class CustomLoginView(LoginView):
     authentication_form = EmailAuthenticationForm
     template_name = 'accounts/login.html'
     
+    def form_valid(self, form):
+        remember_me = self.request.POST.get('remember_me')
+        if not remember_me:
+            # Session expires when browser closes
+            self.request.session.set_expiry(0)
+        else:
+            # Session expires in 30 days
+            self.request.session.set_expiry(30 * 24 * 60 * 60)
+        return super().form_valid(form)
+        
     def get_success_url(self):
         return reverse_lazy('dashboard:index')
 
