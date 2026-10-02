@@ -7,20 +7,24 @@
         <div class="card-body text-center">
             <h4>Date: {{ today }}</h4>
             {% if attendance and attendance.time_in %}
-                <p class="text-success">Time In: {{ attendance.time_in|time:"h:i A" }}</p>
+                <p class="text-success fw-bold mb-1">Time In: {{ attendance.time_in|time:"h:i A" }}</p>
                 {% if attendance.time_out %}
-                    <p class="text-primary">Time Out: {{ attendance.time_out|time:"h:i A" }}</p>
+                    <p class="text-primary fw-bold mb-3">Time Out: {{ attendance.time_out|time:"h:i A" }}</p>
                     <button class="btn btn-secondary rounded-pill px-4" disabled><i class="bi bi-check-all me-2"></i>Shift Completed</button>
                 {% else %}
-                    <a href="{% url 'attendance:qr_scanner' %}" class="btn btn-warning btn-lg rounded-pill px-5 shadow-sm">
-                        <i class="bi bi-qr-code-scan me-2"></i> Scan QR to Time Out
-                    </a>
+                    <p class="text-muted mb-4">You are currently timed in. Show this QR code to time out.</p>
                 {% endif %}
             {% else %}
-                <p class="text-muted mb-4">You haven't timed in yet today. Scan the company QR code to log your attendance.</p>
-                <a href="{% url 'attendance:qr_scanner' %}" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm">
-                    <i class="bi bi-qr-code-scan me-2"></i> Scan QR to Time In
-                </a>
+                <p class="text-muted mb-4">You haven't timed in yet today. Show this QR code to the front desk scanner.</p>
+            {% endif %}
+
+            {% if not attendance or not attendance.time_out %}
+                <div class="mt-4">
+                    <div class="bg-light rounded-4 p-3 d-inline-block shadow-sm mb-3">
+                        <div id="qrcode-container"></div>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0" style="font-size: 0.75rem;">This is your personal Attendance QR.</p>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -29,4 +33,25 @@
         <a href="{% url 'attendance:summary' %}" class="btn btn-primary">View Monthly Summary</a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not attendance or not attendance.time_out %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('qrcode-container');
+        if (container && container.innerHTML.trim() === '') {
+            new QRCode(container, {
+                text: "{{ employee.qr_token }}",
+                width: 200,
+                height: 200,
+                colorDark : "#1e293b",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}
