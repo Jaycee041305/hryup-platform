@@ -1,8 +1,10 @@
 from django.db import models
 from core.models import TimeStampedModel, SoftDeleteModel
+import uuid
 
 class Company(TimeStampedModel, SoftDeleteModel):
     name = models.CharField(max_length=255)
+    attendance_qr_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     trade_name = models.CharField(max_length=255, blank=True)
     registration_number = models.CharField(max_length=100, blank=True)
     tin = models.CharField('TIN', max_length=50, blank=True)

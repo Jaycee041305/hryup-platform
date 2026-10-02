@@ -101,9 +101,9 @@ def monthly_summary(request):
 
 @login_required
 def qr_scanner(request):
-    """View for Client Managers to scan employee QR codes."""
-    if request.user.role not in ['CLIENT_MANAGER', 'HRYUP_ADMIN', 'HRYUP_STAFF']:
-        messages.error(request, "You don't have permission to access the scanner.")
+    """View for Client Employees to scan the Company's QR code."""
+    if request.user.role != 'CLIENT_EMPLOYEE':
+        messages.error(request, "Only employees can use the attendance scanner.")
         return redirect('dashboard:index')
     return render(request, 'attendance/qr_scanner.html')
 
@@ -114,23 +114,24 @@ import json
 @login_required
 @csrf_exempt
 def qr_process_scan(request):
-    """Processes AJAX requests from the QR scanner."""
+    """Processes AJAX requests from the employee's QR scanner."""
     if request.method == 'POST':
-        if request.user.role not in ['CLIENT_MANAGER', 'HRYUP_ADMIN', 'HRYUP_STAFF']:
-            return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+        if request.user.role != 'CLIENT_EMPLOYEE':
+            return JsonResponse({'status': 'error', 'message': 'Unauthorized. Only employees can scan.'}, status=403)
             
         try:
             data = json.loads(request.body)
-            qr_token = data.get('qr_token')
+            scanned_token = data.get('qr_token')
             
-            if not qr_token:
+            if not scanned_token:
                 return JsonResponse({'status': 'error', 'message': 'No QR token provided'})
                 
-            employee = Employee.objects.get(qr_token=qr_token)
+            employee = request.user.employee_profile
+            company = employee.company
             
-            # Make sure the scanner user is scanning someone from their company
-            if request.user.role == 'CLIENT_MANAGER' and employee.company != request.user.employee_profile.company:
-                return JsonResponse({'status': 'error', 'message': 'Employee belongs to a different company'})
+            # Check if the scanned token matches the company's token
+            if str(scanned_token) != str(company.attendance_qr_token):
+                return JsonResponse({'status': 'error', 'message': 'Invalid Company QR Code.'})
 
             today = timezone.localdate()
             now = timezone.localtime().time()
@@ -139,30 +140,27 @@ def qr_process_scan(request):
                 employee=employee,
                 date=today,
                 is_deleted=False,
-                defaults={'company': employee.company, 'time_in': now, 'review_status': 'APPROVED'}
+                defaults={'company': company, 'time_in': now, 'review_status': 'APPROVED'}
             )
 
             if not created:
-                # Check for debounce (wait at least 1 minute between scans to prevent double scanning)
                 import datetime
-                # Just simple logic: if time_out is already there, don't re-timeout.
-                # Actually, standard behavior: first scan is time in, second is time out.
                 if not attendance.time_in:
                     attendance.time_in = now
-                    action = f"Time In recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+                    action = f"Time In recorded at {now.strftime('%I:%M %p')}"
                 elif not attendance.time_out:
                     attendance.time_out = now
-                    action = f"Time Out recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+                    action = f"Time Out recorded at {now.strftime('%I:%M %p')}"
                 else:
-                    return JsonResponse({'status': 'error', 'message': f"{employee.user.get_full_name()} has already timed in and out today."})
+                    return JsonResponse({'status': 'error', 'message': "You have already timed in and out today."})
                 attendance.save()
             else:
-                action = f"Time In recorded for {employee.user.get_full_name()} at {now.strftime('%I:%M %p')}"
+                action = f"Time In recorded at {now.strftime('%I:%M %p')}"
 
-            return JsonResponse({'status': 'success', 'message': action, 'employee_name': employee.user.get_full_name()})
+            return JsonResponse({'status': 'success', 'message': action, 'employee_name': request.user.get_full_name()})
             
         except Employee.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Invalid or unrecognized QR code.'})
+            return JsonResponse({'status': 'error', 'message': 'Employee profile not found.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
             
