@@ -60,29 +60,6 @@ class LeaveRequest(TenantModel):
             )
             if overlapping.exists():
                 raise ValidationError("Leave dates overlap with an existing request.")
-            
-            # Balance validation (only if it's new or still pending and being updated)
-            if self.status == self.StatusChoices.PENDING:
-                try:
-                    balance = LeaveBalance.objects.get(employee=self.employee, leave_type=self.leave_type, is_deleted=False)
-                    if self.duration_days > balance.remaining_days:
-                        raise ValidationError("Requested days exceed remaining leave balance.")
-                except LeaveBalance.DoesNotExist:
-                    raise ValidationError("No leave balance found for this leave type.")
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        old_status = None
-        if not is_new:
-            old_status = LeaveRequest.objects.get(pk=self.pk).status
-
         super().save(*args, **kwargs)
-
-        # Automatic balance deduction
-        if old_status != self.StatusChoices.APPROVED and self.status == self.StatusChoices.APPROVED:
-            try:
-                balance = LeaveBalance.objects.get(employee=self.employee, leave_type=self.leave_type, is_deleted=False)
-                balance.remaining_days -= self.duration_days
-                balance.save()
-            except LeaveBalance.DoesNotExist:
-                pass

@@ -437,33 +437,6 @@
         
         <!-- Leave & Tickets Sidebar -->
         <div class="col-lg-4">
-            <!-- Leave Balances -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
-                    <h5 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
-                        <i class="bi bi-piggy-bank text-success"></i> Leave Balances
-                    </h5>
-                </div>
-                <div class="card-body px-4 pb-4">
-                    {% for bal in leave_balances %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-end mb-1">
-                            <span class="fw-medium text-dark"><i class="bi bi-circle-fill text-primary small me-2"></i>{{ bal.leave_type.name }}</span>
-                            <span class="fw-bold fs-5 text-navy">{{ bal.remaining_days }} <span class="fs-6 text-muted fw-normal">days left</span></span>
-                        </div>
-                        <div class="progress rounded-pill shadow-sm" style="height: 8px;">
-                            <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-umbrella text-muted fs-1 mb-2 opacity-50"></i>
-                        <p class="text-muted mb-0 small">No leave balances assigned yet.</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
             <!-- My Tickets -->
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
