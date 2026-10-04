@@ -6,6 +6,22 @@ from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm
 from employees.models import Employee
 
+def _auto_provision_leave_for_employee(employee):
+    """Ensures basic leave types exist for the company and the employee has balances."""
+    from .models import LeaveType, LeaveBalance
+    company = employee.company
+    if not LeaveType.objects.filter(company=company, is_deleted=False).exists():
+        LeaveType.objects.create(name="Vacation Leave", default_days=15.0, company=company)
+        LeaveType.objects.create(name="Sick Leave", default_days=15.0, company=company)
+    
+    for leave_type in LeaveType.objects.filter(company=company, is_deleted=False):
+        LeaveBalance.objects.get_or_create(
+            employee=employee,
+            leave_type=leave_type,
+            company=company,
+            defaults={'remaining_days': leave_type.default_days}
+        )
+
 @login_required
 def leave_dashboard(request):
     try:
@@ -13,6 +29,8 @@ def leave_dashboard(request):
     except Employee.DoesNotExist:
         messages.error(request, "Employee profile not found.")
         return redirect('core:landing')
+
+    _auto_provision_leave_for_employee(employee)
 
     balances = LeaveBalance.objects.filter(employee=employee, is_deleted=False)
     requests = LeaveRequest.objects.filter(employee=employee, is_deleted=False).order_by('-start_date')
@@ -27,12 +45,15 @@ def request_leave(request):
         messages.error(request, "Employee profile not found.")
         return redirect('core:landing')
 
+    _auto_provision_leave_for_employee(employee)
+    company = employee.company
+
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST)
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.employee = employee
-            leave_request.company = employee.company
+            leave_request.company = company
             try:
                 leave_request.clean()
                 leave_request.save()
@@ -43,8 +64,9 @@ def request_leave(request):
                     messages.error(request, error)
     else:
         form = LeaveRequestForm()
-        # Filter leave types for the company
-        form.fields['leave_type'].queryset = form.fields['leave_type'].queryset.filter(company=employee.company, is_deleted=False)
+
+    # Filter leave types for the company (must happen for both GET and POST)
+    form.fields['leave_type'].queryset = form.fields['leave_type'].queryset.filter(company=company, is_deleted=False)
 
     return render(request, 'leave/request_form.html', {'form': form})
 
