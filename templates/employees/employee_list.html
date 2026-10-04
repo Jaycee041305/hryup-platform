@@ -36,7 +36,9 @@
                 <td>{{ emp.user.get_full_name }}</td>
                 <td>{{ emp.department }}</td>
                 <td>{{ emp.position }}</td>
-                <td>{{ emp.get_status_display }}</td>
+                <td>
+                    {% include 'partials/status_badge.html' with status=emp.get_status_display %}
+                </td>
                 <td>
                     <a href="{% url 'employees:detail' emp.id %}" class="btn btn-sm btn-info">View</a>
                     <a href="{% url 'employees:update' emp.id %}" class="btn btn-sm btn-secondary">Edit</a>
