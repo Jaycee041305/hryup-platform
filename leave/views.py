@@ -76,14 +76,26 @@ def manager_queue(request):
         messages.error(request, "You do not have permission to view this page.")
         return redirect('core:landing')
     
+    from django.db.models import Case, When, IntegerField
+    
+    # Order so PENDING is at the top, then sort by most recently created
+    ordering = [
+        Case(
+            When(status=LeaveRequest.StatusChoices.PENDING, then=0),
+            default=1,
+            output_field=IntegerField(),
+        ),
+        '-created_at'
+    ]
+    
     if request.user.role == 'CLIENT_MANAGER':
         try:
             company = request.user.employee_profile.company
-            requests = LeaveRequest.objects.filter(company=company, status=LeaveRequest.StatusChoices.PENDING, is_deleted=False)
+            requests = LeaveRequest.objects.filter(company=company, is_deleted=False).order_by(*ordering)
         except Employee.DoesNotExist:
             requests = LeaveRequest.objects.none()
     else:
-        requests = LeaveRequest.objects.filter(status=LeaveRequest.StatusChoices.PENDING, is_deleted=False)
+        requests = LeaveRequest.objects.filter(is_deleted=False).order_by(*ordering)
         
     return render(request, 'leave/manager_queue.html', {'requests': requests})
 

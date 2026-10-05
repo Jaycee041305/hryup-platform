@@ -30,12 +30,12 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
         elif user.role == 'CLIENT_MANAGER':
             if hasattr(user, 'employee_profile'):
                 company = user.employee_profile.company
-                context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE').count()
-                context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING').count()
-                context['open_vacancies'] = JobVacancy.objects.filter(company=company, status='Open').count()
-                context['open_tickets'] = Ticket.objects.filter(company=company, status='Open').count()
-                context['recent_employees'] = Employee.objects.filter(company=company, status='ACTIVE').exclude(user__role='CLIENT_MANAGER').order_by('-created_at')[:5]
-                context['recent_tickets'] = Ticket.objects.filter(company=company).order_by('-created_at')[:5]
+                context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).count()
+                context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING', is_deleted=False).count()
+                context['open_vacancies'] = JobVacancy.objects.filter(company=company, status='Open', is_deleted=False).count()
+                context['open_tickets'] = Ticket.objects.filter(company=company, status='Open', is_deleted=False).count()
+                context['recent_employees'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).exclude(user__role='CLIENT_MANAGER').order_by('-created_at')[:5]
+                context['recent_tickets'] = Ticket.objects.filter(company=company, is_deleted=False).order_by('-created_at')[:5]
                 context['my_company'] = company
 
         elif user.role == 'CLIENT_EMPLOYEE':
@@ -79,7 +79,7 @@ class ClientDashboardView(LoginRequiredMixin, TemplateView):
                 raise PermissionDenied("You are not assigned to this client.")
                 
         context['client_company'] = company
-        context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE').count()
-        context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING').count()
-        context['open_tickets'] = Ticket.objects.filter(company=company, status='Open').count()
+        context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).count()
+        context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING', is_deleted=False).count()
+        context['open_tickets'] = Ticket.objects.filter(company=company, status='Open', is_deleted=False).count()
         return context
