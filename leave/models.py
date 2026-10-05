@@ -50,16 +50,17 @@ class LeaveRequest(TenantModel):
                 raise ValidationError("Start date cannot be after end date.")
             
             # Overlap validation
-            overlapping = LeaveRequest.objects.filter(
-                employee=self.employee,
-                status__in=[self.StatusChoices.PENDING, self.StatusChoices.APPROVED],
-                is_deleted=False
-            ).exclude(pk=self.pk).filter(
-                start_date__lte=self.end_date,
-                end_date__gte=self.start_date
-            )
-            if overlapping.exists():
-                raise ValidationError("Leave dates overlap with an existing request.")
+            if hasattr(self, 'employee_id') and self.employee_id:
+                overlapping = LeaveRequest.objects.filter(
+                    employee_id=self.employee_id,
+                    status__in=[self.StatusChoices.PENDING, self.StatusChoices.APPROVED],
+                    is_deleted=False
+                ).exclude(pk=self.pk).filter(
+                    start_date__lte=self.end_date,
+                    end_date__gte=self.start_date
+                )
+                if overlapping.exists():
+                    raise ValidationError("Leave dates overlap with an existing request.")
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
