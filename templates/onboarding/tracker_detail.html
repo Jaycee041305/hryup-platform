@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Onboarding Progress: {{ tracker.employee.user.get_full_name }}</h2>
+        <a href="{% url 'onboarding:tracker_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold text-navy mb-3">
+                <i class="bi bi-journal-check text-primary me-2"></i> {{ tracker.template.title }}
+            </h5>
+            
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3"><strong>Status:</strong> 
+                    {% if tracker.status == 'completed' %}
+                        <span class="badge bg-success rounded-pill px-3">Completed</span>
+                    {% elif tracker.status == 'in_progress' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3">In Progress</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill px-3">Pending</span>
+                    {% endif %}
+                </div>
+                <div><strong>Assigned On:</strong> {{ tracker.created_at|date:"M d, Y" }}</div>
+            </div>
+            
+            {% with total=tracker.employee_tasks.count completed=tracker.employee_tasks.filter.is_completed|length %}
+            <!-- For demo purposes, we will just use basic math approximation or standard bootstrap progress if we don't have exact % -->
+            {% endwith %}
+            
+            <hr>
+            
+            <h6 class="fw-bold text-dark mb-3 mt-4">Required Tasks</h6>
+            <div class="list-group list-group-flush border rounded-3">
+                {% for task in tracker.employee_tasks.all %}
+                <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if task.is_completed %}
+                            <i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>
+                        {% else %}
+                            <i class="bi bi-circle text-muted fs-5 me-2"></i>
+                        {% endif %}
+                        <span class="{% if task.is_completed %}text-decoration-line-through text-muted{% else %}fw-medium{% endif %}">
+                            {{ task.task.description }}
+                        </span>
+                    </div>
+                    
+                    <form action="{% url 'onboarding:toggle_task' tracker.pk task.pk %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" method="post" class="m-0 p-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm {% if task.is_completed %}btn-outline-secondary{% else %}btn-outline-primary{% endif %} rounded-pill px-3">
+                            {% if task.is_completed %}Mark as Pending{% else %}Mark Complete{% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% empty %}
+                <div class="list-group-item p-4 text-center text-muted">
+                    No tasks found in this template.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

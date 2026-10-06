@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                    <h4 class="fw-bold text-navy"><i class="bi bi-person-plus text-primary me-2"></i>Assign Onboarding</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'onboarding:tracker_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 rounded-pill">Assign Checklist</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
