@@ -25,9 +25,7 @@
                 <div><strong>Assigned On:</strong> {{ tracker.created_at|date:"M d, Y" }}</div>
             </div>
             
-            {% with total=tracker.employee_tasks.count completed=tracker.employee_tasks.filter.is_completed|length %}
-            <!-- For demo purposes, we will just use basic math approximation or standard bootstrap progress if we don't have exact % -->
-            {% endwith %}
+            <!-- Progress bar will be added later if needed -->
             
             <hr>
             

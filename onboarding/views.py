@@ -80,14 +80,14 @@ class AssignOnboardingView(CompanyAccessMixin, CreateView):
         
     def form_valid(self, form):
         form.instance.company = self.get_company()
-        response = super().form_valid(form)
+        self.object = form.save()
         
         # Auto-create the tasks based on the template
         tasks_to_create = []
-        for template_task in form.instance.template.tasks.all():
+        for template_task in self.object.template.tasks.all():
             tasks_to_create.append(
                 EmployeeOnboardingTask(
-                    onboarding=form.instance,
+                    onboarding=self.object,
                     task=template_task,
                     company=self.get_company()
                 )
