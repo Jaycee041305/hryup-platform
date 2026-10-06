@@ -106,6 +106,23 @@ class TrackerDetailView(CompanyAccessMixin, TenantQuerySetMixin, DetailView):
     model = EmployeeOnboarding
     template_name = 'onboarding/tracker_detail.html'
     context_object_name = 'tracker'
+    
+    def get_object(self, queryset=None):
+        tracker = super().get_object(queryset)
+        # Self-healing logic: if tasks weren't created (e.g. due to a crash), create them now
+        if not tracker.employee_tasks.exists() and tracker.template.tasks.exists():
+            from .models import EmployeeOnboardingTask
+            tasks_to_create = []
+            for template_task in tracker.template.tasks.all():
+                tasks_to_create.append(
+                    EmployeeOnboardingTask(
+                        onboarding=tracker,
+                        task=template_task,
+                        company=tracker.company
+                    )
+                )
+            EmployeeOnboardingTask.objects.bulk_create(tasks_to_create)
+        return tracker
 
 class ToggleTaskView(CompanyAccessMixin, View):
     def post(self, request, pk, task_id, *args, **kwargs):
