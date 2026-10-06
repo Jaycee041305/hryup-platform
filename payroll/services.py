@@ -8,8 +8,8 @@ from employees.models import Employee
 
 @transaction.atomic
 def run_payroll_aggregation(period: PayrollPeriod):
-    if period.status == PayrollPeriod.StatusChoices.LOCKED:
-        raise ValueError("Cannot run aggregation for a locked period.")
+    if period.status != PayrollPeriod.StatusChoices.DRAFT:
+        raise ValueError("Cannot run aggregation unless the period is in Draft status.")
 
     company = period.company
     employees = Employee.objects.filter(company=company, status=Employee.StatusChoices.ACTIVE)

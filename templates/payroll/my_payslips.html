@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Payslips</h2>
+    <div class="card mt-3">
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Payroll Period</th>
+                        <th>Total Hours</th>
+                        <th>Absences / Lates</th>
+                        <th>Approved Leave</th>
+                        <th>Net Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payslip in payslips %}
+                    <tr>
+                        <td>{{ payslip.period.start_date }} to {{ payslip.period.end_date }}</td>
+                        <td>{{ payslip.total_hours }}</td>
+                        <td>{{ payslip.absent_days }} days / {{ payslip.late_hours }} hrs</td>
+                        <td>{{ payslip.approved_leave_days }} days</td>
+                        <td class="fw-bold">PHP {{ payslip.net_compiled_pay }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No payslips available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

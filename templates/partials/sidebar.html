@@ -67,8 +67,11 @@
                 <a href="#" class="sidebar-nav-item">
                     <i class="bi bi-calendar-check"></i> My Attendance
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'leave:dashboard' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'leave' %}active{% endif %}">
                     <i class="bi bi-airplane"></i> My Leave
+                </a>
+                <a href="{% url 'payroll:my_payslips' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'my_payslips' %}active{% endif %}">
+                    <i class="bi bi-cash-coin"></i> My Payslips
                 </a>
                 <a href="#" class="sidebar-nav-item">
                     <i class="bi bi-file-person"></i> My Documents

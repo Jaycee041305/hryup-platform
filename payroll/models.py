@@ -4,12 +4,14 @@ from employees.models import Employee
 
 class PayrollPeriod(TenantModel):
     class StatusChoices(models.TextChoices):
-        OPEN = 'OPEN', 'Open'
-        LOCKED = 'LOCKED', 'Locked'
+        DRAFT = 'DRAFT', 'Draft (Consolidating)'
+        PENDING_APPROVAL = 'PENDING_APPROVAL', 'Pending Client Approval'
+        APPROVED = 'APPROVED', 'Approved (Ready to Pay)'
+        PAID = 'PAID', 'Paid (Payslips Distributed)'
 
     start_date = models.DateField()
     end_date = models.DateField()
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.OPEN)
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.DRAFT)
 
     def __str__(self):
         return f"{self.start_date} to {self.end_date} - {self.get_status_display()}"

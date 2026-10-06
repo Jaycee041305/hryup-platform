@@ -41,8 +41,13 @@ class PayrollPeriodDetailView(ClientManagerRequiredMixin, TenantQuerySetMixin, D
 class RunAggregationView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
     def post(self, request, pk, *args, **kwargs):
         period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
-        if period.status == PayrollPeriod.StatusChoices.LOCKED:
-            messages.error(request, "Cannot run aggregation for a locked period.")
+        
+        if request.user.role not in ['HRYUP_STAFF', 'HRYUP_ADMIN']:
+            messages.error(request, "Only HRyUp Staff can run payroll aggregation.")
+            return redirect('payroll:period_detail', pk=pk)
+
+        if period.status != PayrollPeriod.StatusChoices.DRAFT:
+            messages.error(request, "Cannot run aggregation unless the period is in Draft status.")
             return redirect('payroll:period_detail', pk=pk)
         
         try:
@@ -53,15 +58,54 @@ class RunAggregationView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
             
         return redirect('payroll:period_detail', pk=pk)
 
-class LockPeriodView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
+class SubmitForApprovalView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
     def post(self, request, pk, *args, **kwargs):
         period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
-        if period.status == PayrollPeriod.StatusChoices.OPEN:
-            period.status = PayrollPeriod.StatusChoices.LOCKED
+        
+        if request.user.role not in ['HRYUP_STAFF', 'HRYUP_ADMIN']:
+            messages.error(request, "Only HRyUp Staff can submit payroll for approval.")
+            return redirect('payroll:period_detail', pk=pk)
+
+        if period.status == PayrollPeriod.StatusChoices.DRAFT:
+            period.status = PayrollPeriod.StatusChoices.PENDING_APPROVAL
             period.save(update_fields=['status'])
-            messages.success(request, "Period locked successfully.")
+            messages.success(request, "Payroll submitted to Client Manager for approval.")
         else:
-            messages.info(request, "Period is already locked.")
+            messages.info(request, "Period is not in Draft status.")
+            
+        return redirect('payroll:period_detail', pk=pk)
+
+class ApprovePayrollView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
+        
+        if request.user.role != 'CLIENT_MANAGER':
+            messages.error(request, "Only the Client Manager can approve the payroll.")
+            return redirect('payroll:period_detail', pk=pk)
+
+        if period.status == PayrollPeriod.StatusChoices.PENDING_APPROVAL:
+            period.status = PayrollPeriod.StatusChoices.APPROVED
+            period.save(update_fields=['status'])
+            messages.success(request, "Payroll approved successfully. You can now disburse funds.")
+        else:
+            messages.info(request, "Period is not pending approval.")
+            
+        return redirect('payroll:period_detail', pk=pk)
+
+class MarkAsPaidView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
+        
+        if request.user.role != 'CLIENT_MANAGER':
+            messages.error(request, "Only the Client Manager can mark the payroll as paid.")
+            return redirect('payroll:period_detail', pk=pk)
+
+        if period.status == PayrollPeriod.StatusChoices.APPROVED:
+            period.status = PayrollPeriod.StatusChoices.PAID
+            period.save(update_fields=['status'])
+            messages.success(request, "Payroll marked as Paid! Payslips are now available to employees.")
+        else:
+            messages.info(request, "Period must be Approved before it can be marked as Paid.")
             
         return redirect('payroll:period_detail', pk=pk)
 
@@ -96,3 +140,20 @@ class ExportCSVView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
             ])
             
         return response
+
+class MyPayslipsView(TenantQuerySetMixin, ListView):
+    model = PayrollEntry
+    template_name = 'payroll/my_payslips.html'
+    context_object_name = 'payslips'
+
+    def get_queryset(self):
+        # Only show payslips for PAID periods for the logged-in employee
+        if not hasattr(self.request.user, 'employee_profile'):
+            return PayrollEntry.objects.none()
+            
+        emp = self.request.user.employee_profile
+        return PayrollEntry.objects.filter(
+            employee=emp, 
+            period__status=PayrollPeriod.StatusChoices.PAID,
+            is_deleted=False
+        ).order_by('-period__start_date')
