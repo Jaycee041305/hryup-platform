@@ -9,6 +9,24 @@ class TrackerListView(CompanyAccessMixin, TenantQuerySetMixin, ListView):
     model = EmployeeOnboarding
     template_name = 'onboarding/tracker_list.html'
     context_object_name = 'trackers'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        company = self.get_company()
+        if company:
+            from .models import OnboardingTemplate, OnboardingTask
+            if not OnboardingTemplate.objects.filter(company=company).exists():
+                template = OnboardingTemplate.objects.create(title='Standard New Hire Checklist', company=company)
+                tasks = [
+                    'Submit Government IDs (SSS, PhilHealth, Pag-IBIG, TIN)',
+                    'Sign Non-Disclosure Agreement (NDA)',
+                    'Read and Acknowledge Employee Handbook',
+                    'Setup Company Email and IT Accounts',
+                    'Attend HR Orientation'
+                ]
+                for desc in tasks:
+                    OnboardingTask.objects.create(template=template, description=desc, company=company)
+        return context
 
 class PolicyListView(CompanyAccessMixin, TenantQuerySetMixin, ListView):
     model = PolicyDocument
