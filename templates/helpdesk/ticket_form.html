@@ -4,30 +4,182 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Submit a Ticket</h4>
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white d-flex align-items-center p-3 border-bottom-0">
+                    <div class="bg-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-robot text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">HRyUp AI Assistant</h5>
+                        <small class="text-white-50">Available 24/7 for your HR needs</small>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                            <div class="text-danger small">{{ field.errors }}</div>
-                            {% endif %}
+                
+                <div class="card-body bg-light p-0">
+                    <!-- Chat History Area -->
+                    <div id="chat-history" class="p-4 overflow-auto" style="height: 450px; background-color: #f8f9fa;">
+                        <!-- Initial AI Message -->
+                        <div class="d-flex mb-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center me-2 flex-shrink-0" style="width: 32px; height: 32px;">
+                                <i class="bi bi-robot text-primary"></i>
+                            </div>
+                            <div class="bg-white border rounded-3 p-3 shadow-sm" style="max-width: 80%;">
+                                Hi there! I'm your virtual HR assistant. I can help answer common questions instantly. If I can't solve your issue, I'll connect you with a human HR specialist. What can I help you with today?
+                            </div>
                         </div>
-                        {% endfor %}
-                        <div class="d-flex justify-content-end">
-                            <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-secondary me-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                    
+                    <!-- Chat Input Area -->
+                    <div class="p-3 bg-white border-top">
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control rounded-pill bg-light border-0 ps-4 py-2" placeholder="Type your HR question here..." aria-label="Type your message" autofocus>
+                            <button class="btn btn-primary rounded-pill px-4 ms-2 shadow-sm" type="button" id="chat-send-btn">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
+
+            <!-- Hidden Django Form -->
+            <form method="post" id="hidden-ticket-form" style="display: none;">
+                {% csrf_token %}
+                {{ form.as_p }}
+            </form>
+
         </div>
     </div>
 </div>
+
+<!-- AI Chatbot Logic for Feasibility Study Mockup -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('chat-send-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const ticketForm = document.getElementById('hidden-ticket-form');
+        
+        // Ensure form fields exist before trying to use them
+        const formCategory = document.querySelector('select[name="category"], input[name="category"]');
+        const formSubject = document.querySelector('input[name="subject"]');
+        const formDesc = document.querySelector('textarea[name="description"]');
+        
+        let conversationTranscript = "Employee: Started Chat\n";
+
+        function appendMessage(sender, text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `d-flex mb-3 ${sender === 'user' ? 'justify-content-end' : ''}`;
+            
+            let bubbleHtml = '';
+            if (sender === 'user') {
+                bubbleHtml = `
+                    <div class="bg-primary text-white rounded-3 p-3 shadow-sm" style="max-width: 80%;">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                bubbleHtml = `
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center me-2 flex-shrink-0" style="width: 32px; height: 32px;">
+                        <i class="bi bi-robot text-primary"></i>
+                    </div>
+                    <div class="bg-white border rounded-3 p-3 shadow-sm" style="max-width: 80%;">
+                        ${text}
+                    </div>
+                `;
+            }
+            
+            wrapper.innerHTML = bubbleHtml;
+            chatHistory.appendChild(wrapper);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function createTicket(issue) {
+            appendMessage('bot', "I see you need a human's help. I am creating an escalation ticket for our HRyUp Specialists right now...");
+            
+            setTimeout(() => {
+                if (formSubject && formDesc) {
+                    // Populate hidden form
+                    formSubject.value = "AI Escalation: " + issue.substring(0, 50);
+                    formDesc.value = "This ticket was automatically escalated by the AI Chatbot.\n\nConversation Transcript:\n" + conversationTranscript;
+                    
+                    // Attempt to set category if it exists
+                    if (formCategory && formCategory.tagName === 'SELECT') {
+                        // Just pick the first non-empty option
+                        for(let i=0; i<formCategory.options.length; i++){
+                            if(formCategory.options[i].value !== '') {
+                                formCategory.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Submit the hidden form
+                    ticketForm.submit();
+                } else {
+                    appendMessage('bot', "Hmm, I'm having trouble creating a ticket. Please refresh the page and try again.");
+                }
+            }, 1500);
+        }
+
+        function handleInput() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Display user message
+            appendMessage('user', text);
+            conversationTranscript += `\nEmployee: ${text}`;
+            chatInput.value = '';
+
+            // Show typing indicator
+            const typingWrapper = document.createElement('div');
+            typingWrapper.id = "typing-indicator";
+            typingWrapper.className = `d-flex mb-3`;
+            typingWrapper.innerHTML = `
+                <div class="bg-primary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center me-2 flex-shrink-0" style="width: 32px; height: 32px;">
+                    <i class="bi bi-robot text-primary"></i>
+                </div>
+                <div class="bg-white border rounded-3 p-3 shadow-sm text-muted fst-italic" style="max-width: 80%;">
+                    Typing...
+                </div>
+            `;
+            chatHistory.appendChild(typingWrapper);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // Simple Keyword Logic
+            setTimeout(() => {
+                const typingEl = document.getElementById('typing-indicator');
+                if (typingEl) typingEl.remove();
+
+                const lowerText = text.toLowerCase();
+                let botResponse = "";
+
+                if (lowerText.includes('payslip') || lowerText.includes('salary') || lowerText.includes('pay')) {
+                    botResponse = "To view your payslips, please look at the left sidebar menu and click on 'My Payslips'. You can download them directly from there. Does that solve your issue, or do you need a human to investigate a payroll discrepancy?";
+                } 
+                else if (lowerText.includes('leave') || lowerText.includes('vacation') || lowerText.includes('sick')) {
+                    botResponse = "You can easily file a leave request by clicking 'My Leave' in the sidebar and pressing 'New Request'. Do you need help with a specific leave balance?";
+                } 
+                else if (lowerText.includes('human') || lowerText.includes('ticket') || lowerText.includes('help') || lowerText.includes('yes') || lowerText.includes('no')) {
+                    createTicket(text);
+                    return; // exit early since createTicket handles the bot reply
+                } 
+                else {
+                    botResponse = "I'm not quite sure how to answer that automatically. Would you like me to create a support ticket so a human HR specialist can assist you?";
+                }
+
+                appendMessage('bot', botResponse);
+                conversationTranscript += `\nAI: ${botResponse}`;
+
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', handleInput);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleInput();
+            }
+        });
+    });
+</script>
 {% endblock %}
