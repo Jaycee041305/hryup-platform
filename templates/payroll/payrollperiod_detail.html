@@ -5,8 +5,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Payroll Period: {{ period.start_date }} to {{ period.end_date }}</h2>
         <div>
-            <a href="{% url 'payroll:export_csv' period.pk %}" class="btn btn-secondary">Export to CSV</a>
-            <a href="{% url 'payroll:period_list' %}" class="btn btn-outline-secondary">Back to List</a>
+            <a href="{% url 'payroll:export_csv' period.pk %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-secondary">Export to CSV</a>
+            <a href="{% url 'payroll:period_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary">Back to List</a>
         </div>
     </div>
 

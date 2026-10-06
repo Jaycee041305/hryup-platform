@@ -13,7 +13,7 @@
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" class="btn btn-primary">Save</button>
-                <a href="{% url 'payroll:period_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                <a href="{% url 'payroll:period_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
             </form>
         </div>
     </div>
