@@ -99,6 +99,19 @@ class ApprovePayrollView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
             
         return redirect('payroll:period_detail', pk=pk)
 
+class RevertToDraftView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
+        
+        if period.status in [PayrollPeriod.StatusChoices.PENDING_APPROVAL, PayrollPeriod.StatusChoices.APPROVED]:
+            period.status = PayrollPeriod.StatusChoices.DRAFT
+            period.save(update_fields=['status'])
+            messages.success(request, "Payroll reverted to Draft status. Changes can now be made.")
+        else:
+            messages.error(request, "Only Pending or Approved payrolls can be reverted.")
+            
+        return redirect('payroll:period_detail', pk=pk)
+
 class MarkAsPaidView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
     def post(self, request, pk, *args, **kwargs):
         period = get_object_or_404(PayrollPeriod.objects.for_user(request.user), pk=pk)
