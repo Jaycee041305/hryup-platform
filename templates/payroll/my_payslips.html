@@ -12,7 +12,6 @@
                         <th>Total Hours</th>
                         <th>Absences / Lates</th>
                         <th>Approved Leave</th>
-                        <th>Net Pay</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -22,11 +21,10 @@
                         <td>{{ payslip.total_hours }}</td>
                         <td>{{ payslip.absent_days }} days / {{ payslip.late_hours }} hrs</td>
                         <td>{{ payslip.approved_leave_days }} days</td>
-                        <td class="fw-bold">PHP {{ payslip.net_compiled_pay }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">No payslips available.</td>
+                        <td colspan="4" class="text-center">No payslips available.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

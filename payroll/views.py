@@ -126,8 +126,7 @@ class ExportCSVView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
         writer = csv.writer(response)
         writer.writerow([
             'Employee', 'Department', 'Position', 
-            'Total Hours', 'Late Hours', 'Absent Days', 'Approved Leave Days',
-            'Basic Rate', 'Allowances', 'Deductions', 'Net Pay'
+            'Total Hours', 'Late Hours', 'Absent Days', 'Approved Leave Days'
         ])
         
         entries = period.entries.select_related('employee__user').all()
@@ -139,11 +138,7 @@ class ExportCSVView(ClientManagerRequiredMixin, TenantQuerySetMixin, View):
                 entry.total_hours,
                 entry.late_hours,
                 entry.absent_days,
-                entry.approved_leave_days,
-                entry.basic_rate,
-                entry.allowances,
-                entry.deductions,
-                entry.net_compiled_pay
+                entry.approved_leave_days
             ])
             
         return response

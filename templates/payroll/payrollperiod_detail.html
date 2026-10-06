@@ -59,10 +59,6 @@
                             <th>Late Hours</th>
                             <th>Absent Days</th>
                             <th>Approved Leave Days</th>
-                            <th>Basic Rate</th>
-                            <th>Allowances</th>
-                            <th>Deductions</th>
-                            <th>Net Pay</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,14 +69,10 @@
                             <td>{{ entry.late_hours }}</td>
                             <td>{{ entry.absent_days }}</td>
                             <td>{{ entry.approved_leave_days }}</td>
-                            <td>{{ entry.basic_rate }}</td>
-                            <td>{{ entry.allowances }}</td>
-                            <td>{{ entry.deductions }}</td>
-                            <td>{{ entry.net_compiled_pay }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="9" class="text-center">No entries found. Click 'Run Aggregation' to generate data.</td>
+                            <td colspan="5" class="text-center">No entries found. Click 'Run/Update Aggregation' to generate data.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
