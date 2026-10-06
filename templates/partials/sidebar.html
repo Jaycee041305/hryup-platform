@@ -52,8 +52,8 @@
                     <i class="bi bi-airplane"></i> Leave
                 </a>
                 {% if company and company.has_recruitment %}
-                <a href="#" class="sidebar-nav-item">
-                    <i class="bi bi-person-plus"></i> Recruitment
+                <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> Onboarding
                 </a>
                 {% endif %}
                 <a href="{% url 'payroll:period_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'payroll' %}active{% endif %}">

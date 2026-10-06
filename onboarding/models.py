@@ -28,6 +28,15 @@ class EmployeeOnboarding(TenantModel):
     def __str__(self):
         return f"{self.employee.user.get_full_name()} - {self.template.title}"
 
+class EmployeeOnboardingTask(TenantModel):
+    onboarding = models.ForeignKey(EmployeeOnboarding, on_delete=models.CASCADE, related_name='employee_tasks')
+    task = models.ForeignKey(OnboardingTask, on_delete=models.CASCADE)
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.task.description} - {'Done' if self.is_completed else 'Pending'}"
+
 class PolicyDocument(TenantModel):
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to='onboarding/policies/')
