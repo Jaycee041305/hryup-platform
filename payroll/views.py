@@ -28,6 +28,13 @@ class PayrollPeriodCreateView(ClientManagerRequiredMixin, CompanyAccessMixin, Cr
         form.instance.company = company
         return super().form_valid(form)
 
+    def get_success_url(self):
+        company = self.request.GET.get('company') or self.request.POST.get('company')
+        url = reverse('payroll:period_list')
+        if company:
+            return f"{url}?company={company}"
+        return url
+
 class PayrollPeriodDetailView(ClientManagerRequiredMixin, TenantQuerySetMixin, DetailView):
     model = PayrollPeriod
     template_name = 'payroll/payrollperiod_detail.html'

@@ -17,14 +17,22 @@ class CompanyAccessMixin(LoginRequiredMixin):
     
     def get_company(self):
         user = self.request.user
+        
+        # Helper to get company_id from any possible source
+        company_id = (
+            self.kwargs.get('company_id') or 
+            self.request.GET.get('company') or 
+            self.request.POST.get('company') or 
+            self.request.session.get('active_company_id')
+        )
+
         if user.role == 'HRYUP_ADMIN':
-            company_id = self.kwargs.get('company_id') or self.request.GET.get('company')
             if company_id:
                 from companies.models import Company
                 return Company.objects.filter(id=company_id).first()
             return None
+            
         elif user.role == 'HRYUP_STAFF':
-            company_id = self.kwargs.get('company_id') or self.request.session.get('active_company_id')
             if company_id:
                 from companies.models import Company
                 return Company.objects.filter(
@@ -32,9 +40,11 @@ class CompanyAccessMixin(LoginRequiredMixin):
                     staff_assignments__staff=user
                 ).first()
             return None
+            
         else:
             if hasattr(user, 'employee_profile') and user.employee_profile:
                 return user.employee_profile.company
+                
         return None
 
 class TenantQuerySetMixin:
