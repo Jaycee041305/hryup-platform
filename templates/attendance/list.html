@@ -23,6 +23,9 @@
                                     <th>Time In</th>
                                     <th>Time Out</th>
                                     <th>Status</th>
+                                    {% if user.role != 'CLIENT_EMPLOYEE' %}
+                                    <th class="pe-4">Action</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -60,10 +63,47 @@
                                             <span class="badge bg-danger rounded-pill px-3">{{ record.review_status|title }}</span>
                                         {% endif %}
                                     </td>
+                                    {% if user.role != 'CLIENT_EMPLOYEE' %}
+                                    <td class="pe-4">
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editModal{{ record.pk }}">
+                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                        </button>
+                                        
+                                        <!-- Edit Modal -->
+                                        <div class="modal fade" id="editModal{{ record.pk }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content border-0 rounded-4 shadow">
+                                                    <div class="modal-header border-bottom-0">
+                                                        <h5 class="modal-title fw-bold text-navy">Edit Attendance</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form method="post" action="{% url 'attendance:edit' record.pk %}">
+                                                        {% csrf_token %}
+                                                        <div class="modal-body">
+                                                            <p class="mb-3">Update log for <strong>{{ record.employee.user.get_full_name }}</strong> on {{ record.date|date:"M d, Y" }}</p>
+                                                            <div class="mb-3">
+                                                                <label class="form-label text-muted small">Time In</label>
+                                                                <input type="time" class="form-control" name="time_in" value="{{ record.time_in|time:'H:i' }}">
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label text-muted small">Time Out</label>
+                                                                <input type="time" class="form-control" name="time_out" value="{{ record.time_out|time:'H:i' }}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer border-top-0">
+                                                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary rounded-pill px-4">Save Changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {% endif %}
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="{% if user.role != 'CLIENT_EMPLOYEE' %}5{% else %}4{% endif %}" class="text-center py-5 text-muted">
+                                    <td colspan="{% if user.role != 'CLIENT_EMPLOYEE' %}6{% else %}4{% endif %}" class="text-center py-5 text-muted">
                                         <i class="bi bi-calendar-x fs-1 text-light d-block mb-2"></i>
                                         No attendance records found.
                                     </td>

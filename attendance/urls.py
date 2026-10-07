@@ -8,6 +8,7 @@ urlpatterns = [
     path('toggle/', views.toggle_attendance, name='toggle'),
     path('list/', views.attendance_list, name='list'),
     path('summary/', views.monthly_summary, name='summary'),
+    path('<int:pk>/edit/', views.attendance_edit, name='edit'),
     path('qr-scanner/', views.qr_scanner, name='qr_scanner'),
     path('qr-process-scan/', views.qr_process_scan, name='qr_process_scan'),
 ]

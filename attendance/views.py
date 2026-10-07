@@ -269,3 +269,33 @@ def qr_process_scan(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
             
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_time
+
+@login_required
+def attendance_edit(request, pk):
+    if request.user.role not in ['CLIENT_MANAGER', 'HRYUP_STAFF', 'HRYUP_ADMIN']:
+        messages.error(request, "Permission denied.")
+        return redirect('attendance:list')
+        
+    attendance = get_object_or_404(Attendance, pk=pk)
+    
+    if request.user.role == 'CLIENT_MANAGER':
+        if not hasattr(request.user, 'employee_profile') or attendance.company != request.user.employee_profile.company:
+            messages.error(request, "Permission denied.")
+            return redirect('attendance:list')
+            
+    if request.method == 'POST':
+        time_in_str = request.POST.get('time_in')
+        time_out_str = request.POST.get('time_out')
+        
+        if time_in_str:
+            attendance.time_in = parse_time(time_in_str)
+        if time_out_str:
+            attendance.time_out = parse_time(time_out_str)
+            
+        attendance.save()
+        messages.success(request, f"Attendance log for {attendance.employee.user.get_full_name()} has been updated successfully.")
+        
+    return redirect('attendance:list')
