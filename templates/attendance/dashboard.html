@@ -8,6 +8,25 @@
     </div>
     
     <div class="row g-4 mb-4">
+        
+        {% if missing_logs %}
+        <!-- Missing Logs Alert -->
+        <div class="col-12 mb-2">
+            <div class="alert alert-danger shadow-sm border-0 d-flex align-items-start rounded-4 p-4">
+                <i class="bi bi-exclamation-triangle-fill fs-3 text-danger me-3"></i>
+                <div>
+                    <h5 class="fw-bold mb-1 text-danger">Action Required: Missing Time Out Logs</h5>
+                    <p class="mb-2">We noticed you forgot to time out on the following dates. Please contact your HR Manager or submit an Attendance Adjustment request.</p>
+                    <ul class="mb-0 text-danger fw-medium">
+                        {% for log in missing_logs %}
+                        <li>{{ log.date|date:"F j, Y (l)" }} — Timed in at {{ log.time_in|time:"h:i A" }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Time In Panel -->
         <div class="col-md-6">
             <div class="card h-100 shadow-sm border-0 rounded-4">

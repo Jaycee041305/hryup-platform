@@ -15,11 +15,20 @@ def attendance_dashboard(request):
 
     today = timezone.localdate()
     attendance = Attendance.objects.filter(employee=employee, date=today, is_deleted=False).first()
+    
+    # Check for past days where they timed in but never timed out
+    missing_logs = Attendance.objects.filter(
+        employee=employee,
+        date__lt=today,
+        time_out__isnull=True,
+        is_deleted=False
+    ).order_by('-date')
 
     context = {
         'employee': employee,
         'today': today,
         'attendance': attendance,
+        'missing_logs': missing_logs,
     }
     return render(request, 'attendance/dashboard.html', context)
 
