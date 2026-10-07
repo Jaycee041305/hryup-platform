@@ -99,7 +99,57 @@ def attendance_list(request):
             qs = qs.filter(company_id=company_id)
             
     attendances = qs.order_by('-date', '-time_in')
-    return render(request, 'attendance/list.html', {'attendances': attendances})
+    
+    # Generate Chart Data for Managers & Staff
+    chart_data = None
+    if user.role in ['CLIENT_MANAGER', 'HRYUP_STAFF', 'HRYUP_ADMIN']:
+        import calendar
+        from django.db.models import Count
+        import json
+        
+        now = timezone.localdate()
+        current_month = now.month
+        current_year = now.year
+        
+        # Approximate working days so far this month (Mon-Fri)
+        working_days_so_far = 0
+        for day in range(1, now.day + 1):
+            if calendar.weekday(current_year, current_month, day) < 5:
+                working_days_so_far += 1
+                
+        # Group by employee for the current month
+        month_qs = qs.filter(date__month=current_month, date__year=current_year)
+        employee_counts = month_qs.values(
+            'employee__user__first_name', 
+            'employee__user__last_name'
+        ).annotate(
+            presents=Count('id')
+        ).order_by('-presents')
+        
+        labels = []
+        data_presents = []
+        colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf']
+        bg_colors = []
+        
+        for idx, emp in enumerate(employee_counts):
+            name = f"{emp['employee__user__first_name']} {emp['employee__user__last_name']}"
+            presents = emp['presents']
+            absences = max(0, working_days_so_far - presents)
+            
+            labels.append(f"{name} (Presents: {presents}, Absences: {absences})")
+            data_presents.append(presents)
+            bg_colors.append(colors[idx % len(colors)])
+            
+        chart_data = json.dumps({
+            'labels': labels,
+            'data': data_presents,
+            'colors': bg_colors
+        })
+
+    return render(request, 'attendance/list.html', {
+        'attendances': attendances,
+        'chart_data': chart_data
+    })
 
 @login_required
 def monthly_summary(request):
