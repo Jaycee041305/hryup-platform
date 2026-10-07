@@ -98,8 +98,12 @@ def manager_queue(request):
     else:
         requests = LeaveRequest.objects.filter(is_deleted=False).order_by(*ordering)
         
-    # Generate Chart Data: Leave Requests by Type
-    type_counts = requests.values('leave_type__name').annotate(count=Count('id')).order_by('-count')
+    # Generate Chart Data: Leave Requests by Employee and Type
+    type_counts = requests.values(
+        'employee__user__first_name',
+        'employee__user__last_name',
+        'leave_type__name'
+    ).annotate(count=Count('id')).order_by('-count')
     
     labels = []
     data_counts = []
@@ -107,7 +111,9 @@ def manager_queue(request):
     bg_colors = []
     
     for idx, item in enumerate(type_counts):
-        labels.append(f"{item['leave_type__name']} ({item['count']})")
+        emp_name = f"{item['employee__user__first_name']} {item['employee__user__last_name']}".strip()
+        l_type = item['leave_type__name']
+        labels.append(f"{emp_name} - {l_type} ({item['count']})")
         data_counts.append(item['count'])
         bg_colors.append(colors[idx % len(colors)])
         
