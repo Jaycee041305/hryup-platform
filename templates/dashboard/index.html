@@ -427,7 +427,12 @@
                                         {% if att.time_out %}
                                             <span class="badge bg-light text-secondary border"><i class="bi bi-box-arrow-left me-1"></i>{{ att.time_out|time:"h:i A" }}</span>
                                         {% else %}
-                                            <span class="text-muted">-</span>
+                                            {% now "Y-m-d" as today_str %}
+                                            {% if att.date|date:"Y-m-d" == today_str %}
+                                                <span class="badge bg-warning text-dark border border-warning"><i class="bi bi-clock-history me-1"></i>On Shift</span>
+                                            {% else %}
+                                                <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>Missing Log</span>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td>
