@@ -76,7 +76,8 @@ def manager_queue(request):
         messages.error(request, "You do not have permission to view this page.")
         return redirect('core:landing')
     
-    from django.db.models import Case, When, IntegerField
+    from django.db.models import Case, When, IntegerField, Count
+    import json
     
     # Order so PENDING is at the top, then sort by most recently created
     ordering = [
@@ -97,7 +98,31 @@ def manager_queue(request):
     else:
         requests = LeaveRequest.objects.filter(is_deleted=False).order_by(*ordering)
         
-    return render(request, 'leave/manager_queue.html', {'requests': requests})
+    # Generate Chart Data: Leave Requests by Type
+    type_counts = requests.values('leave_type__name').annotate(count=Count('id')).order_by('-count')
+    
+    labels = []
+    data_counts = []
+    colors = ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc', '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf']
+    bg_colors = []
+    
+    for idx, item in enumerate(type_counts):
+        labels.append(f"{item['leave_type__name']} ({item['count']})")
+        data_counts.append(item['count'])
+        bg_colors.append(colors[idx % len(colors)])
+        
+    chart_data = None
+    if data_counts:
+        chart_data = json.dumps({
+            'labels': labels,
+            'data': data_counts,
+            'colors': bg_colors
+        })
+        
+    return render(request, 'leave/manager_queue.html', {
+        'requests': requests,
+        'chart_data': chart_data
+    })
 
 @login_required
 def approve_leave(request, pk):
