@@ -6,7 +6,7 @@
     <div class="sidebar-nav">
         {% if user.is_authenticated %}
             <div class="sidebar-heading">Main</div>
-            <a href="{% url 'dashboard:index' %}" class="sidebar-nav-item">
+            <a href="{% url 'dashboard:index' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
             
@@ -18,53 +18,52 @@
                 <a href="{% url 'accounts:user_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}active{% endif %}">
                     <i class="bi bi-people"></i> Staff & Users
                 </a>
-                <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item">
+                <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> Onboarding
+                </a>
+                <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'audit' %}active{% endif %}">
                     <i class="bi bi-journal-text"></i> Audit Log
                 </a>
             {% elif user.is_hryup_staff %}
                 <div class="sidebar-heading">HRyUp Staff</div>
-                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item">
+                <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item {% if request.resolver_match.view_name == 'companies:company_list' %}active{% endif %}">
                     <i class="bi bi-building"></i> My Clients
                 </a>
-                <a href="#" class="sidebar-nav-item">
-                    <i class="bi bi-person-plus"></i> Recruitment
+                <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> Onboarding
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'payroll:period_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'payroll' %}active{% endif %}">
                     <i class="bi bi-cash-coin"></i> Payroll
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'helpdesk:ticket_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'helpdesk' %}active{% endif %}">
                     <i class="bi bi-headset"></i> Helpdesk
                 </a>
             {% elif user.is_client_manager %}
                 <div class="sidebar-heading">Client Management</div>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'employees:list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'employees' %}active{% endif %}">
                     <i class="bi bi-people"></i> Employees
                 </a>
-                {% if company and company.has_201_files %}
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> Onboarding & Approvals
+                </a>
+                <a href="{% url 'documents:list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'documents' %}active{% endif %}">
                     <i class="bi bi-folder2-open"></i> 201 Files
                 </a>
-                {% endif %}
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'attendance:list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'attendance' %}active{% endif %}">
                     <i class="bi bi-calendar-check"></i> Attendance
                 </a>
-                <a href="#" class="sidebar-nav-item">
-                    <i class="bi bi-airplane"></i> Leave
+                <a href="{% url 'leave:manager_queue' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'leave' %}active{% endif %}">
+                    <i class="bi bi-airplane"></i> Leave Approvals
                 </a>
-                {% if company and company.has_recruitment %}
-                <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
-                    <i class="bi bi-door-open"></i> Onboarding
-                </a>
-                {% endif %}
                 <a href="{% url 'payroll:period_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'payroll' %}active{% endif %}">
                     <i class="bi bi-cash-coin"></i> Payroll
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'helpdesk:ticket_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'helpdesk' %}active{% endif %}">
                     <i class="bi bi-headset"></i> Helpdesk
                 </a>
             {% elif user.is_client_employee %}
                 <div class="sidebar-heading">Employee Self Service</div>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'attendance:dashboard' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'attendance' %}active{% endif %}">
                     <i class="bi bi-calendar-check"></i> My Attendance
                 </a>
                 <a href="{% url 'leave:dashboard' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'leave' %}active{% endif %}">
@@ -73,13 +72,13 @@
                 <a href="{% url 'payroll:my_payslips' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'my_payslips' %}active{% endif %}">
                     <i class="bi bi-cash-coin"></i> My Payslips
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'documents:list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'documents' %}active{% endif %}">
                     <i class="bi bi-file-person"></i> My Documents
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'onboarding:policy_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
                     <i class="bi bi-book"></i> HR Policies
                 </a>
-                <a href="#" class="sidebar-nav-item">
+                <a href="{% url 'helpdesk:ticket_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'helpdesk' %}active{% endif %}">
                     <i class="bi bi-headset"></i> Helpdesk
                 </a>
             {% endif %}

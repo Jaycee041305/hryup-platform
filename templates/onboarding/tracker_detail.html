@@ -1,10 +1,88 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container-fluid px-4 px-xl-5 mt-4">
+{% extends 'base_app.html' %}
+
+{% block title %}Onboarding: {{ tracker.employee.user.get_full_name }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'onboarding:tracker_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="text-decoration-none">Onboarding</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ tracker.employee.user.get_full_name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="container-fluid px-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Onboarding Progress: {{ tracker.employee.user.get_full_name }}</h2>
-        <a href="{% url 'onboarding:tracker_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary">Back to List</a>
+        <div>
+            <h4 class="fw-bold text-navy mb-1">
+                <i class="bi bi-person-badge text-primary me-2"></i>{{ tracker.employee.user.get_full_name }}
+            </h4>
+            <div class="text-muted small">
+                {{ tracker.company.name }} &bull; {{ tracker.employee.position|default:"Employee" }} &bull; {{ tracker.employee.user.email }}
+            </div>
+        </div>
+        <a href="{% url 'onboarding:tracker_list' %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Onboardings
+        </a>
     </div>
+
+    <!-- PENDING APPROVAL ALERT BANNER -->
+    {% if tracker.status == 'pending' or not tracker.employee.user.is_active %}
+    <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-hourglass-split me-1"></i>Pending Application Approval
+                    </span>
+                    <span class="text-danger small fw-semibold"><i class="bi bi-lock-fill me-1"></i>Account Inactive</span>
+                </div>
+                <p class="mb-0 text-dark small mt-2">
+                    This employee registered an account and is awaiting manager/HR approval. Approving this application will activate their login credentials and grant access to the employee portal.
+                </p>
+            </div>
+            {% if request.user.role in 'HRYUP_STAFF,HRYUP_ADMIN,CLIENT_MANAGER' %}
+            <div class="d-flex gap-2">
+                <form method="post" action="{% url 'onboarding:tracker_approve' tracker.pk %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i>Approve Application
+                    </button>
+                </form>
+                <form method="post" action="{% url 'onboarding:tracker_reject' tracker.pk %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}" onsubmit="return confirm('Are you sure you want to reject this application?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-3">
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% elif tracker.status == 'rejected' %}
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-danger px-3 py-2 rounded-pill fw-bold mb-2">
+                    <i class="bi bi-x-circle-fill me-1"></i>Application Rejected
+                </span>
+                <p class="mb-0 text-dark small mt-2">
+                    This applicant's registration was rejected. Their account is inactive.
+                </p>
+            </div>
+            {% if request.user.role in 'HRYUP_STAFF,HRYUP_ADMIN,CLIENT_MANAGER' %}
+            <form method="post" action="{% url 'onboarding:tracker_approve' tracker.pk %}{% if request.GET.company %}?company={{ request.GET.company }}{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success rounded-pill px-4">
+                    <i class="bi bi-check-circle me-1"></i>Re-Approve Application
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body p-4">
@@ -17,19 +95,19 @@
                     {% if tracker.status == 'completed' %}
                         <span class="badge bg-success rounded-pill px-3">Completed</span>
                     {% elif tracker.status == 'in_progress' %}
-                        <span class="badge bg-warning text-dark rounded-pill px-3">In Progress</span>
+                        <span class="badge bg-info text-dark rounded-pill px-3">In Progress</span>
+                    {% elif tracker.status == 'rejected' %}
+                        <span class="badge bg-danger rounded-pill px-3">Rejected</span>
                     {% else %}
-                        <span class="badge bg-secondary rounded-pill px-3">Pending</span>
+                        <span class="badge bg-warning text-dark rounded-pill px-3">Pending Approval</span>
                     {% endif %}
                 </div>
                 <div><strong>Assigned On:</strong> {{ tracker.created_at|date:"M d, Y" }}</div>
             </div>
             
-            <!-- Progress bar will be added later if needed -->
-            
             <hr>
             
-            <h6 class="fw-bold text-dark mb-3 mt-4">Required Tasks</h6>
+            <h6 class="fw-bold text-dark mb-3 mt-4">Required Onboarding Checklist Tasks</h6>
             <div class="list-group list-group-flush border rounded-3">
                 {% for task in tracker.employee_tasks.all %}
                 <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">

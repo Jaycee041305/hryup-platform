@@ -17,9 +17,10 @@ class OnboardingTask(TenantModel):
 
 class EmployeeOnboarding(TenantModel):
     STATUS_CHOICES = (
-        ('pending', 'Pending'),
+        ('pending', 'Pending Approval'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
+        ('rejected', 'Rejected'),
     )
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='onboardings')
     template = models.ForeignKey(OnboardingTemplate, on_delete=models.CASCADE)

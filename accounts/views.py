@@ -160,6 +160,10 @@ class PublicSignUpView(CreateView):
     
     def form_valid(self, form):
         from django.contrib import messages
-        messages.success(self.request, "Employee account created successfully! Please log in.")
+        messages.success(
+            self.request,
+            "Your account registration has been submitted and is pending onboarding approval by your company manager/HR. "
+            "You will be able to log in once your application is approved."
+        )
         return super().form_valid(form)
 

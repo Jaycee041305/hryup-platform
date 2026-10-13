@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
-from core.mixins import CompanyAccessMixin, TenantQuerySetMixin
+from core.mixins import CompanyAccessMixin, TenantQuerySetMixin, ClientManagerRequiredMixin
 from employees.models import Employee
 from .models import EmployeeOnboarding, PolicyDocument, PolicyAcknowledgment
 
@@ -9,6 +9,13 @@ class TrackerListView(CompanyAccessMixin, TenantQuerySetMixin, ListView):
     model = EmployeeOnboarding
     template_name = 'onboarding/tracker_list.html'
     context_object_name = 'trackers'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        company_id = self.request.GET.get('company')
+        if company_id and self.request.user.role in ('HRYUP_ADMIN', 'HRYUP_STAFF'):
+            qs = qs.filter(company_id=company_id)
+        return qs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -26,6 +33,12 @@ class TrackerListView(CompanyAccessMixin, TenantQuerySetMixin, ListView):
                 ]
                 for desc in tasks:
                     OnboardingTask.objects.create(template=template, description=desc, company=company)
+
+        all_trackers = list(context.get('trackers', []))
+        context['pending_trackers'] = [t for t in all_trackers if t.status == 'pending' or not t.employee.user.is_active]
+        context['active_trackers'] = [t for t in all_trackers if t.status != 'pending' and t.employee.user.is_active]
+        context['pending_count'] = len(context['pending_trackers'])
+        context['active_count'] = len(context['active_trackers'])
         return context
 
 class PolicyListView(CompanyAccessMixin, TenantQuerySetMixin, ListView):
@@ -147,6 +160,81 @@ class ToggleTaskView(CompanyAccessMixin, View):
         
         url = reverse_lazy('onboarding:tracker_detail', kwargs={'pk': tracker.pk})
         company = self.request.GET.get('company') or self.request.POST.get('company')
+        if company:
+            return redirect(f"{url}?company={company}")
+        return redirect(url)
+
+
+class ApproveOnboardingView(ClientManagerRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        tracker = get_object_or_404(EmployeeOnboarding.objects.for_user(request.user), pk=pk)
+        employee = tracker.employee
+        user = employee.user
+        
+        # Activate the employee's user account so they can log in
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+        
+        # Update employee status
+        employee.status = Employee.StatusChoices.ACTIVE
+        employee.save(update_fields=['status'])
+        
+        # Update onboarding tracker status
+        tracker.status = 'in_progress'
+        tracker.save(update_fields=['status'])
+        
+        from audit.services import log_action
+        log_action(
+            user=request.user,
+            action='APPROVE',
+            description=f"Approved employee onboarding application for {user.get_full_name()} ({user.email})",
+            obj=employee,
+            request=request
+        )
+        
+        messages.success(
+            request, 
+            f"Application for {user.get_full_name()} ({user.email}) has been approved! Their account is now active and they can log in."
+        )
+        
+        url = reverse_lazy('onboarding:tracker_list')
+        company = request.GET.get('company') or request.POST.get('company')
+        if company:
+            return redirect(f"{url}?company={company}")
+        return redirect(url)
+
+
+class RejectOnboardingView(ClientManagerRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        tracker = get_object_or_404(EmployeeOnboarding.objects.for_user(request.user), pk=pk)
+        employee = tracker.employee
+        user = employee.user
+        
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        
+        employee.status = Employee.StatusChoices.TERMINATED
+        employee.save(update_fields=['status'])
+        
+        tracker.status = 'rejected'
+        tracker.save(update_fields=['status'])
+        
+        from audit.services import log_action
+        log_action(
+            user=request.user,
+            action='REJECT',
+            description=f"Rejected employee onboarding application for {user.get_full_name()} ({user.email})",
+            obj=employee,
+            request=request
+        )
+        
+        messages.warning(
+            request,
+            f"Application for {user.get_full_name()} has been rejected."
+        )
+        
+        url = reverse_lazy('onboarding:tracker_list')
+        company = request.GET.get('company') or request.POST.get('company')
         if company:
             return redirect(f"{url}?company={company}")
         return redirect(url)

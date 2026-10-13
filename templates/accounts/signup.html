@@ -11,8 +11,8 @@
                 <a href="{% url 'core:landing' %}" class="text-decoration-none">
                     <img src="{% static 'img/hryup_logo.png' %}" alt="HRyUp Logo" class="me-2" style="height: 60px;">
                 </a>
-                <h4 class="text-navy fw-bold mt-3">Create Employee Account</h4>
-                <p class="text-muted mt-2">Sign up to access your attendance, leaves, and employee portal.</p>
+                <h4 class="text-navy fw-bold mt-3">Employee Sign Up</h4>
+                <p class="text-muted mt-2">Sign up for onboarding. Your company manager will review and approve your application to activate your account.</p>
             </div>
             
             {% if form.non_field_errors %}
@@ -94,7 +94,7 @@
                 </div>
                 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-navy btn-lg">Create Employee Account</button>
+                    <button type="submit" class="btn btn-navy btn-lg">Submit Application</button>
                 </div>
 
                 <div class="alert alert-info border-0 rounded-3 small mt-3 mb-0">

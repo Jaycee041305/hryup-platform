@@ -9,6 +9,7 @@ class Employee(TenantModel):
         INACTIVE = 'INACTIVE', 'Inactive'
         ON_LEAVE = 'ON_LEAVE', 'On Leave'
         TERMINATED = 'TERMINATED', 'Terminated'
+        PENDING_APPROVAL = 'PENDING_APPROVAL', 'Pending Approval'
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='employee_profile')
     qr_token = models.UUIDField(default=uuid.uuid4, editable=False)

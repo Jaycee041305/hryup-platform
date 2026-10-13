@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm, SetPasswordForm
 from .models import User
 
@@ -19,6 +20,35 @@ class EmailAuthenticationForm(AuthenticationForm):
             'autocomplete': 'current-password'
         })
     )
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username is not None and password:
+            self.user_cache = authenticate(
+                self.request, username=username, password=password
+            )
+            if self.user_cache is None:
+                # Check if account exists with valid password but is inactive (pending onboarding approval)
+                user = User.objects.filter(email__iexact=username).first()
+                if user and user.check_password(password) and not user.is_active:
+                    if user.role == 'CLIENT_EMPLOYEE':
+                        raise forms.ValidationError(
+                            "Your account is pending onboarding approval by your company manager/HR. "
+                            "You will be able to log in once your application has been approved.",
+                            code="pending_approval",
+                        )
+                    else:
+                        raise forms.ValidationError(
+                            "This account is currently inactive. Please contact your system administrator.",
+                            code="inactive",
+                        )
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
 
 class UserRegistrationForm(UserCreationForm):
     company = forms.ModelChoiceField(
@@ -52,8 +82,9 @@ class UserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # Public sign-up is strictly for Client Employees
+        # Public sign-up is strictly for Client Employees awaiting onboarding approval
         user.role = 'CLIENT_EMPLOYEE'
+        user.is_active = False
         if commit:
             user.save()
             
@@ -62,16 +93,54 @@ class UserRegistrationForm(UserCreationForm):
             
             if company:
                 from employees.models import Employee
+                from onboarding.models import OnboardingTemplate, OnboardingTask, EmployeeOnboarding, EmployeeOnboardingTask
                 import datetime
                 
-                Employee.objects.create(
+                employee = Employee.objects.create(
                     user=user,
                     company=company,
                     department='General',
                     position=position,
                     hire_date=datetime.date.today(),
-                    status=Employee.StatusChoices.ACTIVE
+                    status=Employee.StatusChoices.PENDING_APPROVAL
                 )
+                
+                # Ensure default onboarding template exists for company
+                template = OnboardingTemplate.objects.filter(company=company).first()
+                if not template:
+                    template = OnboardingTemplate.objects.create(
+                        title='Standard New Hire Checklist',
+                        company=company
+                    )
+                    default_tasks = [
+                        'Submit Government IDs (SSS, PhilHealth, Pag-IBIG, TIN)',
+                        'Sign Non-Disclosure Agreement (NDA)',
+                        'Read and Acknowledge Employee Handbook',
+                        'Setup Company Email and IT Accounts',
+                        'Attend HR Orientation'
+                    ]
+                    for desc in default_tasks:
+                        OnboardingTask.objects.create(template=template, description=desc, company=company)
+                
+                tracker = EmployeeOnboarding.objects.create(
+                    employee=employee,
+                    template=template,
+                    company=company,
+                    status='pending'
+                )
+                
+                # Create checklist tasks for the employee
+                tasks_to_create = [
+                    EmployeeOnboardingTask(
+                        onboarding=tracker,
+                        task=t,
+                        company=company
+                    )
+                    for t in template.tasks.all()
+                ]
+                if tasks_to_create:
+                    EmployeeOnboardingTask.objects.bulk_create(tasks_to_create)
+                    
         return user
 
 class AdminUserCreateForm(forms.ModelForm):
