@@ -48,7 +48,7 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from companies.models import Company
-        self.fields['company'].queryset = Company.objects.filter(is_deleted=False, is_active=True)
+        self.fields['company'].queryset = Company.objects.filter(is_deleted=False).order_by('name')
 
     def save(self, commit=True):
         user = super().save(commit=False)

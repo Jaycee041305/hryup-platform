@@ -25,19 +25,20 @@
             <li><a class="dropdown-item" href="{% url 'accounts:user_create' %}?company={{ company.pk }}&role=CLIENT_MANAGER"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Create Client Manager</a></li>
             <li><a class="dropdown-item" href="{% url 'companies:staff_assignment' company.pk %}"><i class="bi bi-person-lines-fill me-2"></i>Assign HR Staff</a></li>
             <li><hr class="dropdown-divider"></li>
-            {% if company.is_active %}
             <li>
-                <a class="dropdown-item text-danger" href="#" data-bs-confirm="true" data-confirm-title="Deactivate Client" data-confirm-message="Are you sure you want to deactivate this client?" href="#">
-                    <i class="bi bi-slash-circle me-2"></i>Deactivate
-                </a>
+                <form method="post" action="{% url 'companies:company_toggle_status' company.pk %}">
+                    {% csrf_token %}
+                    {% if company.is_active %}
+                    <button type="submit" class="dropdown-item text-danger border-0 bg-transparent">
+                        <i class="bi bi-slash-circle me-2"></i>Deactivate Client
+                    </button>
+                    {% else %}
+                    <button type="submit" class="dropdown-item text-success border-0 bg-transparent">
+                        <i class="bi bi-check-circle me-2"></i>Activate Client
+                    </button>
+                    {% endif %}
+                </form>
             </li>
-            {% else %}
-            <li>
-                <a class="dropdown-item text-success" href="#" data-bs-confirm="true" data-confirm-title="Activate Client" data-confirm-message="Are you sure you want to activate this client?" href="#">
-                    <i class="bi bi-check-circle me-2"></i>Activate
-                </a>
-            </li>
-            {% endif %}
         </ul>
     </div>
     {% endif %}

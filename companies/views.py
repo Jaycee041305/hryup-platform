@@ -1,6 +1,6 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView, DeleteView
+from django.views.generic import View, ListView, DetailView, CreateView, UpdateView, TemplateView, DeleteView
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from core.mixins import HRyUpAdminRequiredMixin as AdminRequiredMixin, HRyUpStaffRequiredMixin as StaffRequiredMixin
 from .models import Company, SubscriptionPackage, Subscription
 from .forms import CompanyForm, SubscriptionPackageForm, SubscriptionForm
@@ -58,6 +58,7 @@ class CompanyCreateView(AdminRequiredMixin, CreateView):
         return reverse_lazy('companies:detail', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
+        form.instance.is_active = True
         response = super().form_valid(form)
         company = self.object
         
@@ -228,3 +229,13 @@ class StaffAssignmentView(AdminRequiredMixin, TemplateView):
             return redirect('companies:staff_assignment', company_id=company.pk)
             
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class CompanyToggleStatusView(AdminRequiredMixin, View):
+    def post(self, request, pk):
+        company = get_object_or_404(Company, pk=pk)
+        company.is_active = not company.is_active
+        company.save(update_fields=['is_active'])
+        status_str = "activated" if company.is_active else "deactivated"
+        messages.success(request, f"Company '{company.name}' was successfully {status_str}.")
+        return redirect('companies:company_detail', pk=company.pk)

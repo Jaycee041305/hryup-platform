@@ -13,6 +13,7 @@ urlpatterns = [
     path('<int:pk>/edit/', views.CompanyUpdateView.as_view(), name='company_edit'),
     path('<int:pk>/edit/', views.CompanyUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', views.CompanyDeleteView.as_view(), name='company_delete'),
+    path('<int:pk>/toggle-status/', views.CompanyToggleStatusView.as_view(), name='company_toggle_status'),
     path('packages/', views.PackageListView.as_view(), name='package_list'),
     path('packages/create/', views.PackageCreateView.as_view(), name='package_create'),
     path('packages/<int:pk>/edit/', views.PackageUpdateView.as_view(), name='package_edit'),

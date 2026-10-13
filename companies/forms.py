@@ -43,7 +43,7 @@ class CompanyForm(forms.ModelForm):
         fields = [
             'name', 'tin', 'address',
             'city', 'province', 'zip_code', 'phone', 'email', 'website',
-            'company_size', 'logo', 'is_active',
+            'company_size', 'logo',
             'manager_first_name', 'manager_last_name', 'manager_email',
             'manager_phone', 'manager_password'
         ]
@@ -57,7 +57,6 @@ class CompanyForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'website': forms.URLInput(attrs={'class': 'form-control'}),
             'logo': forms.FileInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
