@@ -19,7 +19,7 @@
                     <i class="bi bi-people"></i> Staff & Users
                 </a>
                 <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
-                    <i class="bi bi-door-open"></i> Onboarding
+                    <i class="bi bi-person-check"></i> Employee Approvals
                 </a>
                 <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'audit' %}active{% endif %}">
                     <i class="bi bi-journal-text"></i> Audit Log
@@ -36,7 +36,7 @@
                     <i class="bi bi-building-add"></i> Create Client
                 </a>
                 <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
-                    <i class="bi bi-door-open"></i> Onboarding
+                    <i class="bi bi-person-check"></i> Employee Approvals
                 </a>
                 <a href="{% url 'payroll:period_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'payroll' %}active{% endif %}">
                     <i class="bi bi-cash-coin"></i> Payroll
@@ -50,7 +50,7 @@
                     <i class="bi bi-people"></i> Employees
                 </a>
                 <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
-                    <i class="bi bi-door-open"></i> Onboarding & Approvals
+                    <i class="bi bi-person-check"></i> Employee Approvals
                 </a>
                 <a href="{% url 'documents:list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'documents' %}active{% endif %}">
                     <i class="bi bi-folder2-open"></i> 201 Files
