@@ -2,6 +2,22 @@ from django import forms
 from .models import Company, SubscriptionPackage, Subscription
 
 class CompanyForm(forms.ModelForm):
+    name = forms.CharField(
+        max_length=255,
+        label="Company Name",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter company name'})
+    )
+    company_size = forms.ChoiceField(
+        choices=[
+            ('', 'Select company size (optional)'),
+            ('MICRO', 'Micro (1-9)'),
+            ('SMALL', 'Small (10-99)'),
+            ('MEDIUM', 'Medium (100-199)'),
+        ],
+        required=False,
+        label="Company Size",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     # Optional Client Manager creation during company onboarding
     manager_first_name = forms.CharField(
         max_length=150,
@@ -37,16 +53,13 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = [
-            'name', 'trade_name', 'registration_number', 'tin', 'address',
+            'name', 'tin', 'address',
             'city', 'province', 'zip_code', 'phone', 'email', 'website',
-            'industry', 'company_size', 'logo', 'is_active',
+            'company_size', 'logo', 'is_active',
             'manager_first_name', 'manager_last_name', 'manager_email',
             'manager_phone', 'manager_password'
         ]
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'trade_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'registration_number': forms.TextInput(attrs={'class': 'form-control'}),
             'tin': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
@@ -55,8 +68,6 @@ class CompanyForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'website': forms.URLInput(attrs={'class': 'form-control'}),
-            'industry': forms.TextInput(attrs={'class': 'form-control'}),
-            'company_size': forms.Select(attrs={'class': 'form-control'}),
             'logo': forms.FileInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
@@ -71,7 +82,7 @@ class CompanyForm(forms.ModelForm):
             self.fields['province'].initial = 'Metro Manila'
         if 'company_size' in self.fields:
             self.fields['company_size'].required = False
-            self.fields['company_size'].initial = 'MICRO'
+            self.fields['company_size'].initial = ''
 
     def clean(self):
         cleaned_data = super().clean()
