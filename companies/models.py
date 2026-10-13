@@ -45,6 +45,19 @@ class Company(TimeStampedModel, SoftDeleteModel):
     def employee_count(self):
         return self.employees_employee_set.filter(is_deleted=False, status='ACTIVE').count()
     
+    @property
+    def managers(self):
+        from accounts.models import User
+        return User.objects.filter(
+            role='CLIENT_MANAGER',
+            employee_profile__company=self,
+            employee_profile__is_deleted=False
+        )
+
+    @property
+    def primary_manager(self):
+        return self.managers.first()
+
     def has_module(self, module_name):
         sub = self.active_subscription
         if sub and sub.package:
