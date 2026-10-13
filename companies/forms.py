@@ -5,20 +5,8 @@ class CompanyForm(forms.ModelForm):
     name = forms.CharField(
         max_length=255,
         label="Company Name",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter company name'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. SM or Acme Corp'})
     )
-    company_size = forms.ChoiceField(
-        choices=[
-            ('', 'Select company size (optional)'),
-            ('MICRO', 'Micro (1-9)'),
-            ('SMALL', 'Small (10-99)'),
-            ('MEDIUM', 'Medium (100-199)'),
-        ],
-        required=False,
-        label="Company Size",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    # Optional Client Manager creation during company onboarding
     manager_first_name = forms.CharField(
         max_length=150,
         required=False,
@@ -61,7 +49,7 @@ class CompanyForm(forms.ModelForm):
         ]
         widgets = {
             'tin': forms.TextInput(attrs={'class': 'form-control'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
             'province': forms.TextInput(attrs={'class': 'form-control'}),
             'zip_code': forms.TextInput(attrs={'class': 'form-control'}),
@@ -74,6 +62,8 @@ class CompanyForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if 'address' in self.fields:
+            self.fields['address'].required = False
         if 'city' in self.fields:
             self.fields['city'].required = False
             self.fields['city'].initial = 'Las Piñas City'
@@ -82,10 +72,12 @@ class CompanyForm(forms.ModelForm):
             self.fields['province'].initial = 'Metro Manila'
         if 'company_size' in self.fields:
             self.fields['company_size'].required = False
-            self.fields['company_size'].initial = ''
+            self.fields['company_size'].initial = 'MICRO'
 
     def clean(self):
         cleaned_data = super().clean()
+        if not cleaned_data.get('address'):
+            cleaned_data['address'] = 'Metro Manila'
         if not cleaned_data.get('city'):
             cleaned_data['city'] = 'Las Piñas City'
         if not cleaned_data.get('province'):
@@ -100,17 +92,26 @@ class CompanyForm(forms.ModelForm):
         m_first = cleaned_data.get('manager_first_name')
         m_last = cleaned_data.get('manager_last_name')
         
-        # If any manager field is provided, require first name, last name, and email
-        if m_email or m_first or m_last:
+        # When creating a new company, require client manager information
+        if not self.instance.pk:
             if not m_first:
-                self.add_error('manager_first_name', 'Manager first name is required when creating a manager account.')
+                self.add_error('manager_first_name', 'Manager first name is required.')
             if not m_last:
-                self.add_error('manager_last_name', 'Manager last name is required when creating a manager account.')
+                self.add_error('manager_last_name', 'Manager last name is required.')
             if not m_email:
-                self.add_error('manager_email', 'Manager email is required when creating a manager account.')
+                self.add_error('manager_email', 'Manager email is required.')
             elif User.objects.filter(email=m_email).exists():
                 self.add_error('manager_email', 'A user with this email address already exists.')
+        else:
+            # When updating existing company, validate only if email is provided
+            if m_email and User.objects.filter(email=m_email).exists():
+                self.add_error('manager_email', 'A user with this email address already exists.')
                 
+        if not cleaned_data.get('email') and m_email:
+            cleaned_data['email'] = m_email
+        if not cleaned_data.get('phone') and cleaned_data.get('manager_phone'):
+            cleaned_data['phone'] = cleaned_data.get('manager_phone')
+            
         return cleaned_data
 
 

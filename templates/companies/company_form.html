@@ -1,84 +1,74 @@
 {% extends 'base_app.html' %}
 
-{% block title %}{% if object %}Edit {{ object.name }}{% else %}Add Client{% endif %}{% endblock %}
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Register Client & Manager{% endif %}{% endblock %}
 
 {% block breadcrumbs %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}" class="text-decoration-none">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'companies:company_list' %}" class="text-decoration-none">Clients</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{% if object %}Edit{% else %}Add{% endif %}</li>
+        <li class="breadcrumb-item active" aria-current="page">{% if object %}Edit{% else %}Register Client{% endif %}</li>
     </ol>
 </nav>
 {% endblock %}
 
 {% block app_content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">{% if object %}Edit Client: {{ object.name }}{% else %}Register New Client{% endif %}</h5>
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold text-navy">
+                    <i class="bi bi-building me-2 text-primary"></i>
+                    {% if object %}Edit Client: {{ object.name }}{% else %}Register Client & Manager Account{% endif %}
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
                     
-                    <h6 class="text-primary mb-3">Basic Information</h6>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            {% include 'partials/form_field.html' with field=form.name %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {% include 'partials/form_field.html' with field=form.tin %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {% include 'partials/form_field.html' with field=form.company_size %}
-                        </div>
+                    <h6 class="text-primary fw-bold mb-3"><i class="bi bi-building me-2"></i>Company Information</h6>
+                    <div class="mb-4">
+                        {% include 'partials/form_field.html' with field=form.name %}
                     </div>
                     
-                    <h6 class="text-primary mb-3 mt-4">Contact Information</h6>
-                    <div class="row">
+                    {% if not object %}
+                    <h6 class="text-primary fw-bold mb-3 pt-3 border-top"><i class="bi bi-person-badge me-2"></i>Client Manager Account</h6>
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            {% include 'partials/form_field.html' with field=form.email %}
+                            {% include 'partials/form_field.html' with field=form.manager_first_name %}
                         </div>
                         <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.manager_last_name %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.manager_email %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.manager_phone %}
+                        </div>
+                        <div class="col-12">
+                            {% include 'partials/form_field.html' with field=form.manager_password %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
                             {% include 'partials/form_field.html' with field=form.phone %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include 'partials/form_field.html' with field=form.email %}
                         </div>
                         <div class="col-12">
                             {% include 'partials/form_field.html' with field=form.address %}
                         </div>
                     </div>
-                    
-                    {% if not object %}
-                    <div class="border-top pt-4 mt-4">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h6 class="text-primary mb-0"><i class="bi bi-person-badge me-2"></i>Client Manager Account <span class="badge bg-light text-muted border fw-normal">Optional</span></h6>
-                        </div>
-                        <p class="text-muted small mb-3">Set up the initial Client Manager login credentials for this company right now (or leave blank to create later).</p>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                {% include 'partials/form_field.html' with field=form.manager_first_name %}
-                            </div>
-                            <div class="col-md-6">
-                                {% include 'partials/form_field.html' with field=form.manager_last_name %}
-                            </div>
-                            <div class="col-md-6">
-                                {% include 'partials/form_field.html' with field=form.manager_email %}
-                            </div>
-                            <div class="col-md-6">
-                                {% include 'partials/form_field.html' with field=form.manager_phone %}
-                            </div>
-                            <div class="col-md-12">
-                                {% include 'partials/form_field.html' with field=form.manager_password %}
-                            </div>
-                        </div>
-                    </div>
                     {% endif %}
                     
-                    <div class="d-flex justify-content-end mt-4">
-                        <a href="{% if object %}{% url 'companies:company_detail' object.pk %}{% else %}{% url 'companies:company_list' %}{% endif %}" class="btn btn-outline-secondary me-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">{% if object %}Save Changes{% else %}Register Client{% endif %}</button>
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% if object %}{% url 'companies:company_detail' object.pk %}{% else %}{% url 'companies:company_list' %}{% endif %}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            {% if object %}Save Changes{% else %}Create Client & Manager{% endif %}
+                        </button>
                     </div>
                 </form>
             </div>
