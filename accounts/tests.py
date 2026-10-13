@@ -88,3 +88,72 @@ class AccountsTestCase(TestCase):
         from companies.models import Company
         self.assertEqual(StaffAssignment._meta.get_field('staff').remote_field.model, User)
         self.assertEqual(StaffAssignment._meta.get_field('company').remote_field.model, Company)
+
+    def test_user_company_property(self):
+        from companies.models import Company
+        from employees.models import Employee
+        import datetime
+        company = Company.objects.create(name='Test Company')
+        emp_user = User.objects.create_user(
+            email='emp@testcompany.com',
+            first_name='Emp',
+            last_name='Loyee',
+            role='CLIENT_EMPLOYEE',
+            password='password123'
+        )
+        Employee.objects.create(
+            user=emp_user,
+            company=company,
+            department='General',
+            position='Employee',
+            hire_date=datetime.date.today()
+        )
+        self.assertEqual(emp_user.company, company)
+
+    def test_employee_public_signup(self):
+        from companies.models import Company
+        company = Company.objects.create(name='Acme Corp')
+        response = self.client.post(reverse('accounts:signup'), {
+            'first_name': 'Jane',
+            'last_name': 'Doe',
+            'email': 'jane.doe@acme.com',
+            'phone': '09123456789',
+            'company': company.pk,
+            'position': 'Cashier',
+            'password1': 'SecurePass123!',
+            'password2': 'SecurePass123!',
+        })
+        self.assertEqual(response.status_code, 302)
+        created_user = User.objects.filter(email='jane.doe@acme.com').first()
+        self.assertIsNotNone(created_user)
+        self.assertEqual(created_user.role, 'CLIENT_EMPLOYEE')
+        self.assertTrue(hasattr(created_user, 'employee_profile'))
+        self.assertEqual(created_user.employee_profile.company, company)
+        self.assertEqual(created_user.employee_profile.position, 'Cashier')
+
+    def test_admin_can_create_client_manager(self):
+        from companies.models import Company
+        company = Company.objects.create(name='Beta Tech')
+        self.client.force_login(self.admin_user)
+        response = self.client.post(reverse('accounts:user_create'), {
+            'first_name': 'Manager',
+            'last_name': 'Boss',
+            'email': 'boss@betatech.com',
+            'phone': '09987654321',
+            'role': 'CLIENT_MANAGER',
+            'company': company.pk,
+            'custom_password': 'CustomPass123!',
+        })
+        self.assertEqual(response.status_code, 302)
+        mgr = User.objects.filter(email='boss@betatech.com').first()
+        self.assertIsNotNone(mgr)
+        self.assertEqual(mgr.role, 'CLIENT_MANAGER')
+        self.assertTrue(hasattr(mgr, 'employee_profile'))
+        self.assertEqual(mgr.employee_profile.company, company)
+        self.assertEqual(mgr.employee_profile.position, 'Manager')
+        self.assertTrue(mgr.check_password('CustomPass123!'))
+
+    def test_non_admin_cannot_access_user_create(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse('accounts:user_create'))
+        self.assertEqual(response.status_code, 403)

@@ -53,8 +53,11 @@
                 </div>
                 
                 <div class="text-center mt-3">
-                    <span class="text-muted">Don't have an account?</span>
-                    <a href="{% url 'accounts:signup' %}" class="text-gold fw-bold text-decoration-none">Sign Up</a>
+                    <span class="text-muted">Are you an employee?</span>
+                    <a href="{% url 'accounts:signup' %}" class="text-gold fw-bold text-decoration-none">Sign Up Here</a>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-info-circle me-1"></i> Client Manager accounts are provisioned exclusively by HRyUp Administrators.
+                    </div>
                 </div>
             </form>
         </div>

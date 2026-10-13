@@ -104,6 +104,21 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def test_func(self):
         return self.request.user.role == 'HRYUP_ADMIN'
 
+    def get_queryset(self):
+        from django.db.models import Q
+        qs = User.objects.all().order_by('-date_joined')
+        query = self.request.GET.get('q')
+        role = self.request.GET.get('role')
+        if query:
+            qs = qs.filter(
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query) |
+                Q(email__icontains=query)
+            )
+        if role:
+            qs = qs.filter(role=role)
+        return qs
+
 class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, CreateView):
     """
     Template name: accounts/user_create.html
@@ -112,14 +127,30 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixi
     model = User
     form_class = AdminUserCreateForm
     template_name = 'accounts/user_create.html'
-    success_url = reverse_lazy('accounts:user_list')
-    success_message = "User created successfully! (See security rules for default password)"
+    success_message = "User account created successfully!"
     
     def test_func(self):
         return self.request.user.role == 'HRYUP_ADMIN'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        role = self.request.GET.get('role')
+        company_id = self.request.GET.get('company')
+        if role:
+            initial['role'] = role
+        if company_id:
+            initial['company'] = company_id
+        return initial
+
+    def get_success_url(self):
+        company_id = self.request.GET.get('company') or (self.object.company.pk if self.object.company else None)
+        if company_id and self.object.role == 'CLIENT_MANAGER':
+            return reverse_lazy('companies:detail', kwargs={'pk': company_id})
+        return reverse_lazy('accounts:user_list')
+
 class PublicSignUpView(CreateView):
     """
-    Public sign up page for new users/clients.
+    Public sign up page exclusively for Client Employees.
     Template name: accounts/signup.html
     """
     model = User
@@ -129,5 +160,6 @@ class PublicSignUpView(CreateView):
     
     def form_valid(self, form):
         from django.contrib import messages
-        messages.success(self.request, "Account created successfully! Please log in.")
+        messages.success(self.request, "Employee account created successfully! Please log in.")
         return super().form_valid(form)
+

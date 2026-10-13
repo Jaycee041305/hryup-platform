@@ -22,6 +22,7 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{% url 'companies:company_edit' company.pk %}"><i class="bi bi-pencil me-2"></i>Edit Details</a></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:user_create' %}?company={{ company.pk }}&role=CLIENT_MANAGER"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Create Client Manager</a></li>
             <li><a class="dropdown-item" href="{% url 'companies:staff_assignment' company.pk %}"><i class="bi bi-person-lines-fill me-2"></i>Assign HR Staff</a></li>
             <li><hr class="dropdown-divider"></li>
             {% if company.is_active %}
@@ -106,6 +107,56 @@
         </div>
     </div>
     
+    <!-- Client Managers -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Client Manager Accounts</h5>
+                {% if user.is_hryup_admin %}
+                <a href="{% url 'accounts:user_create' %}?company={{ company.pk }}&role=CLIENT_MANAGER" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Add Client Manager
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for mgr in managers %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                {{ mgr.get_short_name|default:mgr.email|make_list|first|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-medium">{{ mgr.get_full_name|default:"-" }}</div>
+                                <div class="text-muted small">{{ mgr.email }}{% if mgr.phone %} &bull; {{ mgr.phone }}{% endif %}</div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if mgr.is_active %}
+                                <span class="badge bg-success rounded-pill px-3">Active Manager</span>
+                            {% else %}
+                                <span class="badge bg-secondary rounded-pill px-3">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-person-exclamation fs-3 d-block mb-2 text-warning"></i>
+                        No Client Manager has been created for this company yet.
+                        {% if user.is_hryup_admin %}
+                        <div class="mt-2">
+                            <a href="{% url 'accounts:user_create' %}?company={{ company.pk }}&role=CLIENT_MANAGER" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="bi bi-person-plus me-1"></i>Create Client Manager Account
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Assigned Staff -->
     <div class="col-12 mb-4">
         <div class="card">

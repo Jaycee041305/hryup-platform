@@ -69,6 +69,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.employee_profile.company
         return None
 
+    @property
+    def company(self):
+        return self.get_company()
+
 class StaffAssignment(models.Model):
     """Tracks which HRyUp staff members are assigned to which client companies."""
     staff = models.ForeignKey(

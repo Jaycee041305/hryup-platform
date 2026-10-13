@@ -27,7 +27,7 @@ class CompanyDetailView(StaffRequiredMixin, DetailView):
     """
     Admin/Staff only.
     Template: companies/company_detail.html
-    Context: company, subscription, employees_count
+    Context: company, subscription, employees_count, managers
     """
     model = Company
     template_name = 'companies/company_detail.html'
@@ -37,6 +37,11 @@ class CompanyDetailView(StaffRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['subscription'] = self.object.active_subscription
         context['employees_count'] = self.object.employee_count
+        context['managers'] = User.objects.filter(
+            role='CLIENT_MANAGER',
+            employee_profile__company=self.object,
+            employee_profile__is_deleted=False
+        )
         return context
 
 class CompanyCreateView(AdminRequiredMixin, CreateView):
@@ -48,7 +53,14 @@ class CompanyCreateView(AdminRequiredMixin, CreateView):
     model = Company
     form_class = CompanyForm
     template_name = 'companies/company_form.html'
-    success_url = reverse_lazy('companies:list')
+    
+    def get_success_url(self):
+        return reverse_lazy('companies:detail', kwargs={'pk': self.object.pk})
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f"Company '{self.object.name}' created successfully! You can now create a Client Manager account for this company.")
+        return response
 
 class CompanyUpdateView(AdminRequiredMixin, UpdateView):
     """

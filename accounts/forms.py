@@ -21,58 +21,54 @@ class EmailAuthenticationForm(AuthenticationForm):
     )
 
 class UserRegistrationForm(UserCreationForm):
-    company_name = forms.CharField(
-        max_length=255, 
-        required=True, 
-        label="Company Name",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your business name'})
-    )
-    role = forms.ChoiceField(
-        choices=[
-            ('', '---------'),
-            ('CLIENT_MANAGER', 'Client Manager'),
-            ('CLIENT_EMPLOYEE', 'Client Employee'),
-        ],
+    company = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Company",
+        empty_label="Select your company...",
         widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    position = forms.CharField(
+        max_length=100,
+        required=False,
+        label="Job Title / Position",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Sales Associate, Accountant (optional)'})
     )
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'company_name', 'role']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'company', 'position']
         widgets = {
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from companies.models import Company
+        self.fields['company'].queryset = Company.objects.filter(is_deleted=False, is_active=True)
+
     def save(self, commit=True):
         user = super().save(commit=False)
+        # Public sign-up is strictly for Client Employees
+        user.role = 'CLIENT_EMPLOYEE'
         if commit:
             user.save()
             
-            role = self.cleaned_data.get('role')
-            company_name = self.cleaned_data.get('company_name')
+            company = self.cleaned_data.get('company')
+            position = self.cleaned_data.get('position') or 'Employee'
             
-            if company_name and role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE']:
-                from companies.models import Company
+            if company:
                 from employees.models import Employee
                 import datetime
-                
-                # Check if company exists by name (case-insensitive) to prevent duplicates if possible
-                company = Company.objects.filter(name__iexact=company_name).first()
-                if not company:
-                    company = Company.objects.create(
-                        name=company_name,
-                        email=user.email,
-                        phone=user.phone
-                    )
                 
                 Employee.objects.create(
                     user=user,
                     company=company,
-                    department='Management' if role == 'CLIENT_MANAGER' else 'General',
-                    position='Manager' if role == 'CLIENT_MANAGER' else 'Employee',
+                    department='General',
+                    position=position,
                     hire_date=datetime.date.today(),
                     status=Employee.StatusChoices.ACTIVE
                 )
@@ -85,10 +81,16 @@ class AdminUserCreateForm(forms.ModelForm):
         empty_label="Select a company...",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    custom_password = forms.CharField(
+        required=False,
+        label="Custom Password (Optional)",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank to use default password'}),
+        help_text="Leave blank to use default password (password123! or LastName_staff)."
+    )
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'role']
+        fields = ['email', 'first_name', 'last_name', 'phone', 'role', 'company', 'custom_password']
         widgets = {
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'e.g. name_staff@hryup.ph'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -100,7 +102,7 @@ class AdminUserCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from companies.models import Company
-        self.fields['company'].queryset = Company.objects.all()
+        self.fields['company'].queryset = Company.objects.filter(is_deleted=False)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -113,7 +115,7 @@ class AdminUserCreateForm(forms.ModelForm):
                 self.add_error('email', 'Staff email username must contain "_staff" (e.g. name_staff@domain.com).')
                 
         if role in ['CLIENT_MANAGER', 'CLIENT_EMPLOYEE'] and not company:
-            self.add_error('company', 'A company is required for client roles.')
+            self.add_error('company', 'A company is required for Client Manager and Client Employee accounts.')
             
         return cleaned_data
 
@@ -122,9 +124,12 @@ class AdminUserCreateForm(forms.ModelForm):
         last_name = self.cleaned_data.get('last_name', 'User')
         role = self.cleaned_data.get('role')
         company = self.cleaned_data.get('company')
+        custom_password = self.cleaned_data.get('custom_password')
         
-        # Generate password based on role
-        if role == 'HRYUP_STAFF':
+        # Determine password
+        if custom_password:
+            password = custom_password
+        elif role == 'HRYUP_STAFF':
             password = f"{last_name.capitalize()}_staff"
         else:
             password = "password123!"

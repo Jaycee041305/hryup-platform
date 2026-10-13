@@ -49,8 +49,13 @@
                     </div>
                     
                     <h6 class="mb-3 text-primary">Security</h6>
+                    <div class="row">
+                        <div class="col-md-12 mb-2">
+                            {% include 'partials/form_field.html' with field=form.custom_password %}
+                        </div>
+                    </div>
                     <p class="text-muted small">
-                        For HRyUp Staff, the password is automatically set to their Last Name followed by <code>_staff</code> (e.g. <code>Smith_staff</code>).<br>
+                        If left blank: for HRyUp Staff, the password is automatically set to their Last Name followed by <code>_staff</code> (e.g. <code>Smith_staff</code>).<br>
                         For other roles, the default password is <code>password123!</code>
                     </p>
                     

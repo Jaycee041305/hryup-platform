@@ -5,9 +5,13 @@ app_name = 'companies'
 
 urlpatterns = [
     path('', views.CompanyListView.as_view(), name='company_list'),
+    path('', views.CompanyListView.as_view(), name='list'),
     path('create/', views.CompanyCreateView.as_view(), name='company_create'),
+    path('create/', views.CompanyCreateView.as_view(), name='create'),
     path('<int:pk>/', views.CompanyDetailView.as_view(), name='company_detail'),
+    path('<int:pk>/', views.CompanyDetailView.as_view(), name='detail'),
     path('<int:pk>/edit/', views.CompanyUpdateView.as_view(), name='company_edit'),
+    path('<int:pk>/edit/', views.CompanyUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', views.CompanyDeleteView.as_view(), name='company_delete'),
     path('packages/', views.PackageListView.as_view(), name='package_list'),
     path('packages/create/', views.PackageCreateView.as_view(), name='package_create'),
