@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
+from django.http import JsonResponse
+from django.urls import reverse
 import datetime
 
 from companies.models import Company
@@ -70,6 +72,11 @@ def ticket_list(request):
 @login_required
 def ticket_submit(request):
     user = request.user
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or 
+        request.content_type == 'application/json' or 
+        request.POST.get('is_ajax') == 'true'
+    )
     
     # Resolve company for client roles
     user_company = user.get_company()
@@ -94,6 +101,8 @@ def ticket_submit(request):
                 ticket.company = user_company
 
             if not ticket.company:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': 'Unable to determine your company.'}, status=400)
                 messages.error(request, "Unable to determine your company. Please contact support.")
                 return render(request, 'helpdesk/ticket_form.html', {'form': form, 'user_company': user_company})
 
@@ -115,9 +124,22 @@ def ticket_submit(request):
             ticket.created_by = user
             ticket.status = 'Open'
             ticket.save()
+
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'ticket_id': ticket.pk,
+                    'ticket_url': reverse('helpdesk:ticket_detail', kwargs={'pk': ticket.pk}),
+                    'subject': ticket.subject,
+                    'category': ticket.category,
+                    'message': f"Ticket #{ticket.id} submitted successfully! Our HR team will review your inquiry shortly."
+                })
+
             messages.success(request, f"Ticket #{ticket.id} submitted successfully! Your HR team will review your inquiry shortly.")
             return redirect('helpdesk:ticket_detail', pk=ticket.pk)
         else:
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
             messages.error(request, "Please check the form for errors.")
     else:
         form = TicketForm(user=user)

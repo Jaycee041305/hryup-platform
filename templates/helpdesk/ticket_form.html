@@ -1,32 +1,102 @@
 {% extends 'base_app.html' %}
 
-{% block title %}Submit Helpdesk Ticket - HRyUp{% endblock %}
+{% block title %}HR Support Chatbot & Helpdesk - HRyUp{% endblock %}
 
 {% block breadcrumbs %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="{% url 'helpdesk:ticket_list' %}">Helpdesk</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Submit Ticket</li>
+        <li class="breadcrumb-item active" aria-current="page">HR Support</li>
     </ol>
 </nav>
 {% endblock %}
 
 {% block app_content %}
 <div class="container-fluid px-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">HR Support Desk</h4>
+            <p class="text-muted small mb-0">Ask questions instantly using our interactive chatbot or create an HR specialist ticket.</p>
+        </div>
+        <div class="btn-group shadow-sm" role="group">
+            <button type="button" class="btn btn-primary btn-sm active" id="btn-mode-chat" onclick="setMode('chat')">
+                <i class="bi bi-chat-dots-fill me-1"></i> Interactive Chatbot
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-mode-form" onclick="setMode('form')">
+                <i class="bi bi-card-text me-1"></i> Standard Ticket Form
+            </button>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <!-- CHATBOT VIEW -->
+        <div class="col-lg-9" id="chatbot-container">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+                <!-- Chatbot Header -->
+                <div class="card-header bg-primary text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 44px; height: 44px;">
+                            <i class="bi bi-chat-heart-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">HRyUp Support Assistant</h6>
+                            <small class="text-white-50 d-flex align-items-center">
+                                <span class="bg-success rounded-circle me-1 d-inline-block" style="width: 8px; height: 8px;"></span>
+                                Online &bull; Instant Knowledge Base &bull; Ticket Transfer Available
+                            </small>
+                        </div>
+                    </div>
+                    {% if user_company %}
+                    <span class="badge bg-white text-primary fw-medium px-3 py-2 border shadow-sm">
+                        <i class="bi bi-building me-1"></i> {{ user_company.name }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Messages Body -->
+                <div class="card-body p-4 bg-light" id="chat-messages" style="height: 520px; overflow-y: auto;">
+                    <!-- Messages will be populated dynamically -->
+                </div>
+
+                <!-- Chat Input Footer -->
+                <div class="card-footer bg-white p-3 border-top">
+                    <form id="chat-form" onsubmit="handleUserSubmit(event)">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control rounded-pill-start ps-3 py-2 border" 
+                                   placeholder="Type your HR question here (e.g. When is payroll?, Forgot time log, Request COE)..." 
+                                   autocomplete="off">
+                            <button class="btn btn-primary rounded-pill-end px-4 fw-semibold" type="submit" id="btn-send">
+                                <i class="bi bi-send-fill me-1"></i> Send
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                            <small class="text-muted" style="font-size: 0.78rem;">
+                                <i class="bi bi-lightbulb text-warning me-1"></i> Tip: Select a category button above or ask any question.
+                            </small>
+                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted" style="font-size: 0.78rem;" onclick="promptManualTicket()">
+                                Can't find answer? <span class="text-primary fw-semibold">Transfer to Ticket</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- STANDARD FORM VIEW (Hidden by default, toggleable) -->
+        <div class="col-lg-8" id="form-container" style="display: none;">
             <div class="card shadow-sm border-0 rounded-3 mb-4">
                 <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                        <i class="bi bi-headset fs-4"></i>
+                        <i class="bi bi-pencil-square fs-4"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold text-dark">Submit Support Ticket</h5>
-                        <p class="text-muted small mb-0">Send your inquiry or request directly to the HR support team</p>
+                        <h5 class="mb-0 fw-bold text-dark">Submit Support Ticket Directly</h5>
+                        <p class="text-muted small mb-0">Fill out the form below to file a formal request to your HR support team.</p>
                     </div>
                 </div>
-                
+
                 <div class="card-body p-4">
                     {% if user_company %}
                     <div class="alert alert-light border rounded-3 p-3 mb-4 d-flex align-items-center">
@@ -47,7 +117,7 @@
                     </div>
                     {% endif %}
 
-                    <form method="post" novalidate>
+                    <form method="post" id="traditional-ticket-form" novalidate>
                         {% csrf_token %}
 
                         {% if form.company %}
@@ -71,7 +141,6 @@
                             {% if form.category.errors %}
                             <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
                             {% endif %}
-                            <div class="form-text text-muted">Choose the category that best fits your inquiry or issue.</div>
                         </div>
 
                         <div class="mb-3">
@@ -82,7 +151,6 @@
                             {% if form.subject.errors %}
                             <div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>
                             {% endif %}
-                            <div class="form-text text-muted">Provide a concise topic line for your inquiry.</div>
                         </div>
 
                         <div class="mb-4">
@@ -93,13 +161,12 @@
                             {% if form.description.errors %}
                             <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
                             {% endif %}
-                            <div class="form-text text-muted">Please include relevant details, specific dates, or steps to help us assist you promptly.</div>
                         </div>
 
                         <div class="d-flex align-items-center justify-content-between pt-3 border-top">
-                            <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline-secondary px-3">
-                                <i class="bi bi-arrow-left me-1"></i> Back to Tickets
-                            </a>
+                            <button type="button" class="btn btn-outline-secondary px-3" onclick="setMode('chat')">
+                                <i class="bi bi-chat-dots me-1"></i> Switch to Chatbot
+                            </button>
                             <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
                                 <i class="bi bi-send-fill me-2"></i> Submit Ticket
                             </button>
@@ -108,46 +175,540 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 rounded-3 mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle text-primary me-2"></i>Helpdesk Guidelines</h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-3 d-flex">
-                            <i class="bi bi-check2-circle text-success me-2 fs-5 flex-shrink-0"></i>
-                            <div>
-                                <strong class="d-block small text-dark">Clear Details</strong>
-                                <span class="small text-muted">Include exact dates, times, employee IDs, or document names involved.</span>
-                            </div>
-                        </li>
-                        <li class="mb-3 d-flex">
-                            <i class="bi bi-clock-history text-primary me-2 fs-5 flex-shrink-0"></i>
-                            <div>
-                                <strong class="d-block small text-dark">Prompt Response</strong>
-                                <span class="small text-muted">Tickets are reviewed by HRyUp staff specialists during regular business hours.</span>
-                            </div>
-                        </li>
-                        <li class="mb-0 d-flex">
-                            <i class="bi bi-arrow-repeat text-warning me-2 fs-5 flex-shrink-0"></i>
-                            <div>
-                                <strong class="d-block small text-dark">Manager Escalations</strong>
-                                <span class="small text-muted">If approval or employer decisions are required, tickets will be escalated to your company manager.</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0 rounded-3 bg-light">
-                <div class="card-body">
-                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-question-circle text-secondary me-2"></i>Need Help Immediately?</h6>
-                    <p class="small text-muted mb-0">For emergency workplace concerns, please contact your immediate supervisor or company manager directly.</p>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
+
+<style>
+/* Chat UI Styles */
+.chat-bubble-bot {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    padding: 1rem 1.25rem;
+    max-width: 82%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.chat-bubble-user {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border-radius: 1rem 1rem 0.25rem 1rem;
+    padding: 0.85rem 1.25rem;
+    max-width: 80%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.chat-action-btn {
+    border-radius: 20px;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.85rem;
+    margin: 0.2rem;
+    transition: all 0.15s ease-in-out;
+}
+.chat-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.typing-dots span {
+    animation: blink 1.4s infinite both;
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+    0% { opacity: 0.2; }
+    20% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
+</style>
+
+<script>
+// --- CHATBOT KNOWLEDGE BASE & CATEGORIES ---
+const FAQ_DATA = {
+    payroll: {
+        title: "Payroll & Compensation",
+        icon: "bi-cash-coin",
+        questions: [
+            {
+                q: "When is the payroll cutoff and pay day?",
+                a: "Our client companies typically operate on a semi-monthly cutoff schedule:\n• 1st to 15th cutoff is disbursed around the 20th.\n• 16th to end of month cutoff is disbursed around the 5th.\nYou can view your finalized payslips in the 'My Payslips' section."
+            },
+            {
+                q: "How do I dispute a payslip discrepancy?",
+                a: "If your payslip has an incorrect hour count, missing overtime, or inaccurate deduction, you can transfer your inquiry directly to an HR ticket below so our payroll specialist can review and adjust it."
+            },
+            {
+                q: "How is Overtime (OT) and Holiday Pay computed?",
+                a: "In accordance with DOLE labor guidelines:\n• Regular Overtime: +25% of hourly rate.\n• Rest Day / Special Non-Working Holiday: +30% of daily rate.\n• Regular Holiday: 200% of basic daily rate.\n• Night Shift Differential: +10% between 10:00 PM and 6:00 AM."
+            }
+        ]
+    },
+    attendance: {
+        title: "Attendance & Time Logs",
+        icon: "bi-clock-history",
+        questions: [
+            {
+                q: "I forgot to clock in or clock out. What should I do?",
+                a: "If you missed a punch, don't worry! You can submit an attendance adjustment or inform your manager. If you need HR to manually rectify your time log, you can transfer this directly into an HR support ticket."
+            },
+            {
+                q: "Why was my attendance marked late or absent?",
+                a: "Attendance records are computed based on your designated Work Schedule. If your punch in was after the shift start time or outside the grace period, it registers as late. If there is a schedule mismatch, please create a ticket."
+            },
+            {
+                q: "Where do I check my monthly attendance records?",
+                a: "You can view your full attendance logs, total rendered hours, and review statuses anytime under 'My Attendance' in the left navigation sidebar."
+            }
+        ]
+    },
+    leave: {
+        title: "Leave Requests & Balances",
+        icon: "bi-airplane",
+        questions: [
+            {
+                q: "How do I file for a Vacation or Sick Leave?",
+                a: "To file a leave:\n1. Click 'My Leave' on the sidebar.\n2. Click 'Request Leave'.\n3. Select your leave type (Vacation, Sick, Emergency, etc.) and date range.\nYour manager will be notified to approve it."
+            },
+            {
+                q: "How many leave credits do I have remaining?",
+                a: "Your leave balances (Service Incentive Leave, Vacation Leave, Sick Leave) are tracked in real-time under the 'My Leave' dashboard. Approved leaves automatically deduct from your balance."
+            },
+            {
+                q: "Can I file emergency leave without prior notice?",
+                a: "Emergency leaves should be filed as soon as possible, ideally within 24 hours of resuming work, accompanied by relevant supporting documents (e.g. medical certificate for sick leave)."
+            }
+        ]
+    },
+    documents: {
+        title: "201 Files & Documents",
+        icon: "bi-file-earmark-person",
+        questions: [
+            {
+                q: "How do I request a Certificate of Employment (COE)?",
+                a: "To request a Certificate of Employment (with or without compensation details), you can transfer this request into an HR ticket below! Standard processing time is 2 to 3 business days."
+            },
+            {
+                q: "What documents belong in my 201 file?",
+                a: "Your 201 file stores your employment contract, resume, government IDs (SSS, PhilHealth, Pag-IBIG, TIN), medical certificates, and performance records. You can upload documents under 'My Documents'."
+            }
+        ]
+    },
+    benefits: {
+        title: "Benefits & Government (SSS/PhilHealth/Pag-IBIG)",
+        icon: "bi-heart-pulse",
+        questions: [
+            {
+                q: "How do I update my SSS, PhilHealth, or Pag-IBIG numbers?",
+                a: "Please upload your official Member Data Record (MDR) or E-1/registration form in 'My Documents', or submit an HR ticket below with your updated government numbers."
+            },
+            {
+                q: "How do I file for SSS Sickness or Maternity Benefit?",
+                a: "Notify HR as soon as possible with your SSS Sickness Notification form and doctor's medical certificate. Our HR team will submit the reimbursement claim to SSS."
+            }
+        ]
+    },
+    policies: {
+        title: "Company Policies & Guidelines",
+        icon: "bi-book",
+        questions: [
+            {
+                q: "Where can I read the Employee Handbook and Code of Conduct?",
+                a: "All active company policies, employee guidelines, and memos are accessible 24/7 under 'HR Policies' in your sidebar menu."
+            },
+            {
+                q: "What is the company dress code and work hours?",
+                a: "General policy requires smart casual or business attire, observing respect and safety. Specific shift hours are detailed in your assigned work schedule."
+            }
+        ]
+    }
+};
+
+// Keyword mapping for free-form questions
+const KEYWORD_MAP = [
+    { keywords: ['cutoff', 'pay day', 'payday', 'salary', 'sweldo', 'payroll date', 'when will i get paid'], category: 'Payroll & Compensation', answer: FAQ_DATA.payroll.questions[0].a },
+    { keywords: ['dispute', 'wrong salary', 'missing pay', 'payslip wrong', 'payslip error', 'deduction'], category: 'Payroll & Compensation', answer: FAQ_DATA.payroll.questions[1].a },
+    { keywords: ['overtime', 'ot', 'holiday pay', 'holiday', 'night diff', 'rest day'], category: 'Payroll & Compensation', answer: FAQ_DATA.payroll.questions[2].a },
+    { keywords: ['clock in', 'clock out', 'time in', 'time out', 'forgot to punch', 'missed punch', 'missed log', 'biometric'], category: 'Attendance & Time Logs', answer: FAQ_DATA.attendance.questions[0].a },
+    { keywords: ['late', 'tardy', 'absent', 'grace period', 'undertime'], category: 'Attendance & Time Logs', answer: FAQ_DATA.attendance.questions[1].a },
+    { keywords: ['file leave', 'apply leave', 'vacation leave', 'sick leave', 'file vacation'], category: 'Leave Request & Balances', answer: FAQ_DATA.leave.questions[0].a },
+    { keywords: ['leave balance', 'remaining leave', 'leave credits', 'sil balance'], category: 'Leave Request & Balances', answer: FAQ_DATA.leave.questions[1].a },
+    { keywords: ['emergency leave', 'short notice', 'medical certificate'], category: 'Leave Request & Balances', answer: FAQ_DATA.leave.questions[2].a },
+    { keywords: ['coe', 'certificate of employment', 'employment cert', 'certificate'], category: '201 File & Employment Records', answer: FAQ_DATA.documents.questions[0].a },
+    { keywords: ['201 file', 'contract', 'requirements', 'resume'], category: '201 File & Employment Records', answer: FAQ_DATA.documents.questions[1].a },
+    { keywords: ['sss', 'philhealth', 'pag-ibig', 'pagibig', 'tin', 'government id', 'mdr'], category: 'Benefits & Government Contributions', answer: FAQ_DATA.benefits.questions[0].a },
+    { keywords: ['maternity', 'sickness benefit', 'paternity'], category: 'Benefits & Government Contributions', answer: FAQ_DATA.benefits.questions[1].a },
+    { keywords: ['handbook', 'code of conduct', 'policy', 'rules'], category: 'Company Policy & Guidelines', answer: FAQ_DATA.policies.questions[0].a },
+    { keywords: ['dress code', 'attire', 'office hours', 'schedule'], category: 'Company Policy & Guidelines', answer: FAQ_DATA.policies.questions[1].a }
+];
+
+let currentUserQuestion = "";
+let currentCategory = "General HR Inquiry";
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderWelcomeMessage();
+});
+
+function setMode(mode) {
+    const chatContainer = document.getElementById('chatbot-container');
+    const formContainer = document.getElementById('form-container');
+    const btnChat = document.getElementById('btn-mode-chat');
+    const btnForm = document.getElementById('btn-mode-form');
+
+    if (mode === 'chat') {
+        chatContainer.style.display = 'block';
+        formContainer.style.display = 'none';
+        btnChat.classList.add('active', 'btn-primary');
+        btnChat.classList.remove('btn-outline-primary');
+        btnForm.classList.remove('active', 'btn-primary');
+        btnForm.classList.add('btn-outline-primary');
+    } else {
+        chatContainer.style.display = 'none';
+        formContainer.style.display = 'block';
+        btnForm.classList.add('active', 'btn-primary');
+        btnForm.classList.remove('btn-outline-primary');
+        btnChat.classList.remove('active', 'btn-primary');
+        btnChat.classList.add('btn-outline-primary');
+    }
+}
+
+function scrollToBottom() {
+    const chat = document.getElementById('chat-messages');
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function appendBotMessage(contentHtml) {
+    const chat = document.getElementById('chat-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'd-flex mb-3 align-items-start';
+    msgDiv.innerHTML = `
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0 shadow-sm" style="width: 34px; height: 34px;">
+            <i class="bi bi-chat-heart-fill small"></i>
+        </div>
+        <div class="chat-bubble-bot">
+            ${contentHtml}
+        </div>
+    `;
+    chat.appendChild(msgDiv);
+    scrollToBottom();
+}
+
+function appendUserMessage(text) {
+    const chat = document.getElementById('chat-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'd-flex mb-3 justify-content-end';
+    msgDiv.innerHTML = `
+        <div class="chat-bubble-user">
+            ${escapeHtml(text)}
+        </div>
+        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center ms-2 flex-shrink-0 shadow-sm" style="width: 34px; height: 34px;">
+            <i class="bi bi-person-fill small"></i>
+        </div>
+    `;
+    chat.appendChild(msgDiv);
+    scrollToBottom();
+}
+
+function renderWelcomeMessage() {
+    const welcomeHtml = `
+        <p class="mb-2 fw-semibold text-dark">Hello! 👋 Welcome to HRyUp Support.</p>
+        <p class="small text-muted mb-3">I can answer common HR questions instantly. Choose a category below, or type your question in the chat box:</p>
+        <div class="d-flex flex-wrap gap-1 mb-2">
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('payroll')">
+                <i class="bi bi-cash-coin me-1"></i> Payroll & Payslips
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('attendance')">
+                <i class="bi bi-clock-history me-1"></i> Attendance & Time Logs
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('leave')">
+                <i class="bi bi-airplane me-1"></i> Leave & Balances
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('documents')">
+                <i class="bi bi-file-earmark-person me-1"></i> 201 Files & COE
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('benefits')">
+                <i class="bi bi-heart-pulse me-1"></i> SSS, PhilHealth, Pag-IBIG
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('policies')">
+                <i class="bi bi-book me-1"></i> Company Policies
+            </button>
+            <button type="button" class="btn btn-warning btn-sm chat-action-btn fw-semibold" onclick="promptManualTicket('General Inquiry')">
+                <i class="bi bi-ticket-perforated me-1"></i> Transfer to Ticket Directly
+            </button>
+        </div>
+    `;
+    appendBotMessage(welcomeHtml);
+}
+
+function selectCategory(catKey) {
+    const cat = FAQ_DATA[catKey];
+    if (!cat) return;
+    
+    currentCategory = cat.title;
+    appendUserMessage(`Selected topic: ${cat.title}`);
+
+    let qButtonsHtml = cat.questions.map((item, idx) => `
+        <button type="button" class="btn btn-outline-secondary btn-sm chat-action-btn text-start d-block w-100 mb-1" 
+                onclick="showAnswer('${catKey}', ${idx})">
+            <i class="bi bi-question-circle me-1 text-primary"></i> ${item.q}
+        </button>
+    `).join('');
+
+    const botHtml = `
+        <div class="fw-semibold text-dark mb-2"><i class="bi ${cat.icon} text-primary me-1"></i> ${cat.title}</div>
+        <p class="small text-muted mb-2">Here are the most common questions under this topic:</p>
+        <div class="mb-3">${qButtonsHtml}</div>
+        <div class="pt-2 border-top">
+            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted" onclick="promptManualTicket('${cat.title}')">
+                Need something else? <span class="text-primary fw-semibold">Transfer to HR Ticket</span>
+            </button>
+        </div>
+    `;
+    appendBotMessage(botHtml);
+}
+
+function showAnswer(catKey, qIdx) {
+    const cat = FAQ_DATA[catKey];
+    const item = cat.questions[qIdx];
+    appendUserMessage(item.q);
+    currentUserQuestion = item.q;
+
+    const formattedAnswer = item.a.replace(/\n/g, '<br>');
+    const botHtml = `
+        <div class="fw-semibold text-dark mb-1"><i class="bi bi-check-circle-fill text-success me-1"></i> Answer:</div>
+        <div class="small mb-3" style="line-height: 1.6;">${formattedAnswer}</div>
+        <div class="p-2 bg-light rounded border d-flex flex-wrap gap-2 align-items-center">
+            <span class="small text-muted me-1">Did this help?</span>
+            <button type="button" class="btn btn-outline-success btn-sm chat-action-btn" onclick="handleResolved()">
+                <i class="bi bi-hand-thumbs-up me-1"></i> Yes, thank you!
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="promptManualTicket('${cat.title}', '${item.q}')">
+                <i class="bi bi-ticket-perforated me-1"></i> No, transfer to ticket
+            </button>
+        </div>
+    `;
+    appendBotMessage(botHtml);
+}
+
+function handleResolved() {
+    appendUserMessage("Yes, that solved my question!");
+    appendBotMessage(`
+        <div class="text-success fw-semibold"><i class="bi bi-emoji-smile me-1"></i> Wonderful! Glad I could help.</div>
+        <p class="small text-muted mb-2 mt-1">If you have any other questions, feel free to ask anytime!</p>
+        <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="renderWelcomeMessage()">
+            <i class="bi bi-arrow-repeat me-1"></i> Ask Another Question
+        </button>
+    `);
+}
+
+function handleUserSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const query = input.value.trim();
+    if (!query) return;
+
+    input.value = '';
+    appendUserMessage(query);
+    currentUserQuestion = query;
+
+    // Show temporary typing indicator
+    const chat = document.getElementById('chat-messages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typing-indicator';
+    typingDiv.className = 'd-flex mb-3 align-items-start';
+    typingDiv.innerHTML = `
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 34px; height: 34px;">
+            <i class="bi bi-chat-heart-fill small"></i>
+        </div>
+        <div class="chat-bubble-bot text-muted small typing-dots">
+            Finding answer <span>.</span><span>.</span><span>.</span>
+        </div>
+    `;
+    chat.appendChild(typingDiv);
+    scrollToBottom();
+
+    setTimeout(() => {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) indicator.remove();
+        processUserQuery(query);
+    }, 450);
+}
+
+function processUserQuery(query) {
+    const qLower = query.toLowerCase();
+    
+    // Search keyword database
+    let bestMatch = null;
+    for (const entry of KEYWORD_MAP) {
+        for (const kw of entry.keywords) {
+            if (qLower.includes(kw)) {
+                bestMatch = entry;
+                break;
+            }
+        }
+        if (bestMatch) break;
+    }
+
+    if (bestMatch) {
+        currentCategory = bestMatch.category;
+        const formattedAnswer = bestMatch.answer.replace(/\n/g, '<br>');
+        appendBotMessage(`
+            <div class="fw-semibold text-dark mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Here is what I found regarding <strong>${bestMatch.category}</strong>:</div>
+            <div class="small mb-3" style="line-height: 1.6;">${formattedAnswer}</div>
+            <div class="p-2 bg-light rounded border d-flex flex-wrap gap-2 align-items-center">
+                <span class="small text-muted me-1">Did this solve your problem?</span>
+                <button type="button" class="btn btn-outline-success btn-sm chat-action-btn" onclick="handleResolved()">
+                    <i class="bi bi-check-lg me-1"></i> Solved
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="promptManualTicket('${bestMatch.category}', '${escapeHtml(query)}')">
+                    <i class="bi bi-ticket-perforated me-1"></i> Transfer to Ticket
+                </button>
+            </div>
+        `);
+    } else {
+        // Chatbot cannot answer -> Offer ticket transfer
+        appendBotMessage(`
+            <div class="mb-2"><i class="bi bi-question-diamond text-warning me-1"></i> I couldn't find a direct answer in our automated knowledge base for:</div>
+            <div class="alert alert-light border p-2 small mb-3 text-dark fw-semibold">"${escapeHtml(query)}"</div>
+            <p class="small text-muted mb-3">Would you like me to transfer this directly to our HR specialists as a support ticket?</p>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary btn-sm chat-action-btn fw-semibold shadow-sm" onclick="promptManualTicket('General HR Inquiry', '${escapeHtml(query)}')">
+                    <i class="bi bi-ticket-perforated me-1"></i> Yes, Transfer to HR Ticket
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-action-btn" onclick="renderWelcomeMessage()">
+                    <i class="bi bi-arrow-left me-1"></i> Try Different Topic
+                </button>
+            </div>
+        `);
+    }
+}
+
+// Transfer to Ticket Dialog inside the chat
+function promptManualTicket(category = 'General HR Inquiry', initialQuery = '') {
+    const subjectValue = initialQuery || currentUserQuestion || 'Inquiry regarding HR Support';
+    const formId = 'chat-ticket-form-' + Date.now();
+
+    const transferCardHtml = `
+        <div class="border border-primary border-opacity-50 rounded-3 p-3 bg-white shadow-sm">
+            <div class="d-flex align-items-center mb-2 text-primary fw-bold">
+                <i class="bi bi-ticket-perforated-fill fs-5 me-2"></i> Transferring to Support Ticket
+            </div>
+            <p class="small text-muted mb-3">Our HR specialists will review and address your inquiry promptly.</p>
+            
+            <form id="${formId}" onsubmit="submitChatTicket(event, '${formId}')">
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold text-muted mb-1">Inquiry Category</label>
+                    <select name="category" class="form-select form-select-sm" required>
+                        <option value="General HR Inquiry" ${category === 'General HR Inquiry' ? 'selected' : ''}>General HR Inquiry</option>
+                        <option value="Payroll & Compensation" ${category.includes('Payroll') ? 'selected' : ''}>Payroll & Compensation</option>
+                        <option value="Attendance & Time Logs" ${category.includes('Attendance') ? 'selected' : ''}>Attendance & Time Logs</option>
+                        <option value="Leave Request & Balances" ${category.includes('Leave') ? 'selected' : ''}>Leave Request & Balances</option>
+                        <option value="201 File & Employment Records" ${category.includes('201') || category.includes('Document') ? 'selected' : ''}>201 File & Employment Records</option>
+                        <option value="Benefits & Government Contributions" ${category.includes('Benefits') || category.includes('SSS') ? 'selected' : ''}>Benefits & Government Contributions</option>
+                        <option value="IT" ${category.includes('IT') ? 'selected' : ''}>IT / Technical Support</option>
+                        <option value="Company Policy & Guidelines" ${category.includes('Policy') ? 'selected' : ''}>Company Policy & Guidelines</option>
+                        <option value="Account & Login Assistance">Account & Login Assistance</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold text-muted mb-1">Subject</label>
+                    <input type="text" name="subject" class="form-control form-control-sm" value="${escapeHtml(subjectValue)}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted mb-1">Detailed Description</label>
+                    <textarea name="description" class="form-control form-control-sm" rows="3" placeholder="Please provide additional details, dates, or circumstances..." required>${escapeHtml(initialQuery ? `Inquiry: ${initialQuery}` : '')}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm" id="${formId}-btn">
+                        <i class="bi bi-send-fill me-1"></i> Register Ticket Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    appendBotMessage(transferCardHtml);
+}
+
+// Asynchronous Ticket Submission with CSRF & Error Handling
+async function submitChatTicket(e, formId) {
+    e.preventDefault();
+    const form = document.getElementById(formId);
+    const submitBtn = document.getElementById(formId + '-btn');
+
+    if (!form) return;
+
+    const formData = new FormData(form);
+    formData.append('is_ajax', 'true');
+
+    // Retrieve CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Submitting...`;
+
+    try {
+        const response = await fetch("{% url 'helpdesk:ticket_submit' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Replace form with success confirmation card
+            form.parentElement.innerHTML = `
+                <div class="text-center py-3">
+                    <div class="text-success mb-2">
+                        <i class="bi bi-check-circle-fill display-6"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">Ticket Registered Successfully!</h6>
+                    <p class="small text-muted mb-3">
+                        Your ticket has been assigned ticket ID <strong>#${data.ticket_id}</strong>: "${escapeHtml(data.subject)}".
+                    </p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="${data.ticket_url}" class="btn btn-primary btn-sm px-3 fw-semibold">
+                            <i class="bi bi-eye-fill me-1"></i> View Ticket #${data.ticket_id}
+                        </a>
+                        <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline-secondary btn-sm px-3">
+                            <i class="bi bi-list-task me-1"></i> All Tickets
+                        </a>
+                    </div>
+                </div>
+            `;
+            scrollToBottom();
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="bi bi-send-fill me-1"></i> Register Ticket Now`;
+            let errMsg = data.error || "Please check your inputs and try again.";
+            if (data.errors) {
+                errMsg = Object.values(data.errors).flat().join('<br>');
+            }
+            alert("Unable to register ticket: " + errMsg);
+        }
+    } catch (err) {
+        console.error("Ticket registration error:", err);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-send-fill me-1"></i> Register Ticket Now`;
+        alert("An error occurred while connecting to the server. Please try again or use the standard form.");
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+</script>
 {% endblock %}

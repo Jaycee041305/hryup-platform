@@ -113,3 +113,27 @@ class HelpdeskTests(TestCase):
         ticket.refresh_from_db()
         self.assertEqual(ticket.status, 'Resolved')
 
+    def test_chatbot_ajax_ticket_submission(self):
+        self.client.force_login(self.employee1)
+        response = self.client.post(
+            reverse('helpdesk:ticket_submit'),
+            {
+                'category': 'Attendance & Time Logs',
+                'subject': 'Biometric punch failed',
+                'description': 'Device did not record my punch out yesterday.',
+                'is_ajax': 'true'
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertIn('ticket_id', data)
+        self.assertEqual(data['subject'], 'Biometric punch failed')
+        
+        ticket = Ticket.objects.get(pk=data['ticket_id'])
+        self.assertEqual(ticket.company, self.company1)
+        self.assertEqual(ticket.employee, self.emp_profile_e1)
+        self.assertEqual(ticket.status, 'Open')
+
+
