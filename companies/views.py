@@ -59,7 +59,38 @@ class CompanyCreateView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, f"Company '{self.object.name}' created successfully! You can now create a Client Manager account for this company.")
+        company = self.object
+        
+        manager_email = form.cleaned_data.get('manager_email')
+        if manager_email:
+            first_name = form.cleaned_data.get('manager_first_name')
+            last_name = form.cleaned_data.get('manager_last_name')
+            phone = form.cleaned_data.get('manager_phone') or ''
+            password = form.cleaned_data.get('manager_password') or 'password123!'
+            
+            user = User.objects.create_user(
+                email=manager_email,
+                first_name=first_name,
+                last_name=last_name,
+                role='CLIENT_MANAGER',
+                phone=phone,
+                password=password
+            )
+            
+            from employees.models import Employee
+            import datetime
+            Employee.objects.create(
+                user=user,
+                company=company,
+                department='Management',
+                position='Manager',
+                hire_date=datetime.date.today(),
+                status=Employee.StatusChoices.ACTIVE
+            )
+            messages.success(self.request, f"Company '{company.name}' and Client Manager account for {user.get_full_name()} ({user.email}) created successfully!")
+        else:
+            messages.success(self.request, f"Company '{company.name}' created successfully! You can create a Client Manager account below at any time.")
+            
         return response
 
 class CompanyUpdateView(AdminRequiredMixin, UpdateView):

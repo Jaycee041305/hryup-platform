@@ -81,3 +81,26 @@ class CompaniesTests(TestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse('companies:staff_assignment', kwargs={'company_id': self.company.id}))
         self.assertEqual(response.status_code, 200)
+
+    def test_company_creation_with_client_manager(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse('companies:company_create'), {
+            'name': 'New Client Co',
+            'address': '789 Business Blvd',
+            'manager_first_name': 'Alice',
+            'manager_last_name': 'Manager',
+            'manager_email': 'alice@newclient.com',
+            'manager_phone': '09112223334',
+            'manager_password': 'ManagerPass123!',
+        })
+        self.assertEqual(response.status_code, 302)
+        company = Company.objects.filter(name='New Client Co').first()
+        self.assertIsNotNone(company)
+        mgr = User.objects.filter(email='alice@newclient.com').first()
+        self.assertIsNotNone(mgr)
+        self.assertEqual(mgr.role, 'CLIENT_MANAGER')
+        self.assertTrue(hasattr(mgr, 'employee_profile'))
+        self.assertEqual(mgr.employee_profile.company, company)
+        self.assertEqual(mgr.employee_profile.position, 'Manager')
+        self.assertTrue(mgr.check_password('ManagerPass123!'))
+
