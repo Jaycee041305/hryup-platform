@@ -44,9 +44,9 @@ class CompanyDetailView(StaffRequiredMixin, DetailView):
         )
         return context
 
-class CompanyCreateView(AdminRequiredMixin, CreateView):
+class CompanyCreateView(StaffRequiredMixin, CreateView):
     """
-    Admin only.
+    Admin and Staff.
     Template: companies/company_form.html
     Context: form
     """
@@ -62,6 +62,15 @@ class CompanyCreateView(AdminRequiredMixin, CreateView):
         response = super().form_valid(form)
         company = self.object
         
+        # If created by staff, automatically assign them to this company
+        if self.request.user.role == 'HRYUP_STAFF':
+            from accounts.models import StaffAssignment
+            StaffAssignment.objects.get_or_create(
+                staff=self.request.user,
+                company=company,
+                defaults={'is_primary': True}
+            )
+
         manager_email = form.cleaned_data.get('manager_email')
         if manager_email:
             first_name = form.cleaned_data.get('manager_first_name')
@@ -94,7 +103,7 @@ class CompanyCreateView(AdminRequiredMixin, CreateView):
             
         return response
 
-class CompanyUpdateView(AdminRequiredMixin, UpdateView):
+class CompanyUpdateView(StaffRequiredMixin, UpdateView):
     """
     Admin only.
     Template: companies/company_form.html

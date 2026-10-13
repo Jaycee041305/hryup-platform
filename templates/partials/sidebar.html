@@ -29,6 +29,9 @@
                 <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item {% if request.resolver_match.view_name == 'companies:company_list' %}active{% endif %}">
                     <i class="bi bi-building"></i> My Clients
                 </a>
+                <a href="{% url 'companies:create' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'create' or request.resolver_match.url_name == 'company_create' %}active{% endif %}">
+                    <i class="bi bi-building-add"></i> Create Client
+                </a>
                 <a href="{% url 'onboarding:tracker_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'onboarding' %}active{% endif %}">
                     <i class="bi bi-door-open"></i> Onboarding
                 </a>

@@ -69,12 +69,16 @@ class CompaniesTests(TestCase):
         response = self.client.get(reverse('companies:company_list'))
         self.assertEqual(response.status_code, 200)
         
+        # Staff can now create client accounts
         response = self.client.get(reverse('companies:company_create'))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
     def test_view_access_control_non_admin(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('companies:company_list'))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse('companies:company_create'))
         self.assertEqual(response.status_code, 403)
         
     def test_staff_assignment(self):

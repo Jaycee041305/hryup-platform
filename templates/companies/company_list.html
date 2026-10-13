@@ -14,9 +14,9 @@
 {% block app_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="h4 mb-0">Clients (Companies)</h2>
-    {% if user.is_hryup_admin %}
-    <a href="{% url 'companies:company_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> Add Client
+    {% if user.is_hryup_admin or user.is_hryup_staff %}
+    <a href="{% url 'companies:create' %}" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-building-add me-1"></i> Create Client Account
     </a>
     {% endif %}
 </div>
