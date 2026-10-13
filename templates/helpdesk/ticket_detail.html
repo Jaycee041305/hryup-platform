@@ -1,102 +1,258 @@
-{% extends 'base.html' %}
+{% extends 'base_app.html' %}
 
-{% block content %}
-<div class="container-fluid px-4 px-xl-5 mt-4">
-    <div class="row">
-        <!-- Ticket Thread -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">{{ ticket.subject }}</h4>
-                    <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <small class="text-muted">By {{ ticket.employee.user.get_full_name }} on {{ ticket.created_at|date:"M d, Y H:i" }}</small>
-                        <p class="mt-2" style="white-space: pre-wrap;">{{ ticket.description }}</p>
+{% block title %}Ticket #{{ ticket.id }}: {{ ticket.subject }} - HRyUp{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'helpdesk:ticket_list' %}">Helpdesk</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Ticket #{{ ticket.id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block app_content %}
+<div class="container-fluid px-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h4 class="fw-bold mb-0 text-dark">Ticket #{{ ticket.id }}: {{ ticket.subject }}</h4>
+                {% if ticket.status == 'Open' %}
+                    <span class="badge bg-primary">Open</span>
+                {% elif ticket.status == 'In Progress' %}
+                    <span class="badge bg-info text-dark">In Progress</span>
+                {% elif ticket.status == 'Waiting on Client' %}
+                    <span class="badge bg-warning text-dark">Waiting on Client</span>
+                {% elif ticket.status == 'Resolved' %}
+                    <span class="badge bg-success">Resolved</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ ticket.status }}</span>
+                {% endif %}
+            </div>
+            <p class="text-muted small mb-0">
+                Category: <strong>{{ ticket.category }}</strong> &bull; Company: <strong>{{ ticket.company.name }}</strong>
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline-secondary px-3">
+                <i class="bi bi-arrow-left me-1"></i> Back to Queue
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Conversation Area -->
+        <div class="col-lg-8">
+            <!-- Original Ticket Request Card -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-dark">{{ ticket.submitter_name }}</div>
+                            <div class="small text-muted">{{ ticket.submitter_email }} &bull; Submitted on {{ ticket.created_at|date:"M d, Y h:i A" }}</div>
+                        </div>
                     </div>
+                    <span class="badge bg-light text-dark border">{{ ticket.category }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-dark" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">{{ ticket.description }}</div>
+                </div>
+            </div>
 
-                    <hr>
-                    <h5>Replies</h5>
+            <!-- Escalations Notice (if any) -->
+            {% if escalations %}
+            <div class="card shadow-sm border-warning rounded-3 mb-4">
+                <div class="card-header bg-warning bg-opacity-10 text-dark py-3 border-warning border-opacity-25 d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2 fs-5"></i>
+                    <h6 class="mb-0 fw-bold">Escalation History</h6>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group list-group-flush">
+                        {% for esc in escalations %}
+                        <li class="list-group-item bg-transparent px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold text-dark">Escalated to: {{ esc.escalated_to.get_full_name }} (Client Manager)</div>
+                                    <div class="small text-muted mt-1"><strong>Reason:</strong> {{ esc.reason }}</div>
+                                </div>
+                                <span class="small text-muted">{{ esc.created_at|date:"M d, Y h:i A" }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Replies / Discussion Timeline -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-chat-dots text-primary me-2"></i>Responses & Updates</h6>
+                    <span class="badge bg-light text-muted border">{{ replies|length }} response{{ replies|length|pluralize }}</span>
+                </div>
+                <div class="card-body p-4">
                     {% for reply in replies %}
-                    <div class="card mb-2">
-                        <div class="card-body py-2">
-                            <small class="text-muted fw-bold">{{ reply.sender.get_full_name }}</small>
-                            <small class="text-muted float-end">{{ reply.created_at|date:"M d, Y H:i" }}</small>
-                            <p class="mb-0 mt-1" style="white-space: pre-wrap;">{{ reply.message }}</p>
+                    <div class="d-flex mb-4">
+                        <div class="me-3 flex-shrink-0">
+                            {% if reply.sender.is_hryup_staff or reply.sender.is_hryup_admin %}
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-headset"></i>
+                                </div>
+                            {% elif reply.sender.is_client_manager %}
+                                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-person-badge"></i>
+                                </div>
+                            {% else %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="bg-light p-3 rounded-3 border">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="fw-semibold text-dark">{{ reply.sender.get_full_name }}</span>
+                                        {% if reply.sender.is_hryup_staff or reply.sender.is_hryup_admin %}
+                                            <span class="badge bg-primary ms-1" style="font-size: 0.7rem;">HR Specialist</span>
+                                        {% elif reply.sender.is_client_manager %}
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size: 0.7rem;">Manager</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-1" style="font-size: 0.7rem;">Employee</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="small text-muted">{{ reply.created_at|date:"M d, Y h:i A" }}</span>
+                                </div>
+                                <div class="text-dark small" style="white-space: pre-wrap; line-height: 1.5;">{{ reply.message }}</div>
+                            </div>
                         </div>
                     </div>
                     {% empty %}
-                    <p class="text-muted">No replies yet.</p>
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-chat-left-text fs-2 d-block mb-2 opacity-50"></i>
+                        <p class="small mb-0">No replies yet. Submit a response below to start the thread.</p>
+                    </div>
                     {% endfor %}
 
-                    <div class="mt-4">
+                    <!-- Reply Form -->
+                    <div class="pt-3 border-top mt-4">
+                        <h6 class="fw-bold text-dark mb-3">Add Response</h6>
                         <form method="post">
                             {% csrf_token %}
-                            {{ reply_form.as_p }}
-                            <button type="submit" name="add_reply" class="btn btn-primary">Post Reply</button>
+                            <div class="mb-3">
+                                {{ reply_form.message }}
+                                {% if reply_form.message.errors %}
+                                <div class="text-danger small mt-1">{{ reply_form.message.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="add_reply" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                                    <i class="bi bi-send-fill me-1"></i> Post Reply
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
-            
-            {% if escalations %}
-            <div class="card mb-4 border-warning">
-                <div class="card-header bg-warning text-dark">
-                    Escalations
-                </div>
-                <ul class="list-group list-group-flush">
-                    {% for esc in escalations %}
-                    <li class="list-group-item">
-                        <strong>To:</strong> {{ esc.escalated_to.get_full_name }} <br>
-                        <strong>Reason:</strong> {{ esc.reason }} <br>
-                        <small class="text-muted">{{ esc.created_at|date:"M d, Y H:i" }}</small>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
         </div>
 
-        <!-- Sidebar for Admin/Staff Tools -->
-        <div class="col-md-4">
-            {% if user.is_hryup_staff or user.is_hryup_admin %}
-            <div class="card mb-4">
-                <div class="card-header">Manage Ticket</div>
-                <div class="card-body">
-                    <form method="post" class="mb-4">
+        <!-- Sidebar Details & Management -->
+        <div class="col-lg-4">
+            <!-- Staff & Admin Management Card -->
+            {% if status_form %}
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-gear text-primary me-2"></i>Ticket Management</h6>
+                </div>
+                <div class="card-body p-3">
+                    <form method="post" class="mb-3">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Update Status</label>
+                        <label class="form-label small fw-semibold text-muted">Update Status</label>
+                        <div class="input-group">
                             {{ status_form.status }}
+                            <button type="submit" name="update_status" class="btn btn-outline-primary">
+                                Save
+                            </button>
                         </div>
-                        <button type="submit" name="update_status" class="btn btn-sm btn-outline-primary">Update</button>
                     </form>
 
+                    {% if escalate_form %}
                     <hr>
-
-                    <h6>Escalate to Client Manager</h6>
-                    <form method="post" action="{% url 'helpdesk:ticket_escalate' ticket.pk %}">
-                        {% csrf_token %}
-                        {% for field in escalate_form %}
-                        <div class="mb-2">
-                            <label class="form-label small">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                        {% endfor %}
-                        <button type="submit" name="escalate_ticket" class="btn btn-sm btn-warning">Escalate</button>
-                    </form>
+                    <div class="mt-3">
+                        <label class="form-label small fw-semibold text-muted mb-2">Escalate to Client Manager</label>
+                        <form method="post" action="{% url 'helpdesk:ticket_escalate' ticket.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <label class="form-label small text-muted">Manager</label>
+                                {{ escalate_form.escalated_to }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Reason for Escalation</label>
+                                {{ escalate_form.reason }}
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm w-100 fw-semibold">
+                                <i class="bi bi-arrow-up-right-circle me-1"></i> Escalate Ticket
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
-            
-            <div class="card">
-                <div class="card-header">Details</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Company:</strong> {{ ticket.company.name }}</li>
-                    <li class="list-group-item"><strong>Category:</strong> {{ ticket.category }}</li>
-                    <li class="list-group-item"><strong>Assigned:</strong> {{ ticket.assigned_staff.get_full_name|default:"Unassigned" }}</li>
-                </ul>
+
+            <!-- Ticket Information Details Card -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle text-primary me-2"></i>Ticket Details</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Ticket ID</span>
+                            <span class="fw-bold text-dark">#{{ ticket.id }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Status</span>
+                            {% if ticket.status == 'Open' %}
+                                <span class="badge bg-primary">Open</span>
+                            {% elif ticket.status == 'In Progress' %}
+                                <span class="badge bg-info text-dark">In Progress</span>
+                            {% elif ticket.status == 'Waiting on Client' %}
+                                <span class="badge bg-warning text-dark">Waiting on Client</span>
+                            {% elif ticket.status == 'Resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ ticket.status }}</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Company</span>
+                            <span class="fw-semibold text-dark text-end">{{ ticket.company.name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Inquiry Category</span>
+                            <span class="fw-semibold text-dark text-end">{{ ticket.category }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Assigned Specialist</span>
+                            <span class="fw-semibold text-dark text-end">
+                                {{ ticket.assigned_staff.get_full_name|default:"Unassigned" }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Submitted By</span>
+                            <span class="fw-semibold text-dark text-end">{{ ticket.submitter_name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted">Date Created</span>
+                            <span class="text-muted text-end">{{ ticket.created_at|date:"M d, Y h:i A" }}</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

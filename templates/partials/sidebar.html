@@ -24,6 +24,9 @@
                 <a href="{% url 'audit:audit_log_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'audit' %}active{% endif %}">
                     <i class="bi bi-journal-text"></i> Audit Log
                 </a>
+                <a href="{% url 'helpdesk:ticket_list' %}" class="sidebar-nav-item {% if request.resolver_match.app_name == 'helpdesk' %}active{% endif %}">
+                    <i class="bi bi-headset"></i> Helpdesk
+                </a>
             {% elif user.is_hryup_staff %}
                 <div class="sidebar-heading">HRyUp Staff</div>
                 <a href="{% url 'companies:company_list' %}" class="sidebar-nav-item {% if request.resolver_match.view_name == 'companies:company_list' %}active{% endif %}">

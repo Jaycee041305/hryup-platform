@@ -64,3 +64,52 @@ class HelpdeskTests(TestCase):
         esc = TicketEscalation.objects.first()
         self.assertEqual(esc.escalated_to, self.manager1)
         self.assertEqual(esc.ticket, ticket)
+
+    def test_manager_ticket_submission(self):
+        self.client.force_login(self.manager1)
+        response = self.client.post(reverse('helpdesk:ticket_submit'), {
+            'category': 'Payroll & Compensation',
+            'subject': 'Cutoff adjustment inquiry',
+            'description': 'Please verify payroll cutoff for this month.'
+        })
+        self.assertEqual(response.status_code, 302)
+        ticket = Ticket.objects.filter(subject='Cutoff adjustment inquiry').first()
+        self.assertIsNotNone(ticket)
+        self.assertEqual(ticket.company, self.company1)
+
+    def test_ticket_reply(self):
+        ticket = Ticket.objects.create(
+            company=self.company1,
+            employee=self.emp_profile_e1,
+            category='IT',
+            subject='Monitor not turning on',
+            description='Power button does not respond.'
+        )
+        self.client.force_login(self.staff)
+        response = self.client.post(reverse('helpdesk:ticket_detail', args=[ticket.pk]), {
+            'add_reply': '1',
+            'message': 'Have you checked the power cable connection?'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ticket.replies.count(), 1)
+        reply = ticket.replies.first()
+        self.assertEqual(reply.sender, self.staff)
+        self.assertEqual(reply.message, 'Have you checked the power cable connection?')
+
+    def test_ticket_status_update(self):
+        ticket = Ticket.objects.create(
+            company=self.company1,
+            employee=self.emp_profile_e1,
+            category='IT',
+            subject='Keycard access issue',
+            description='Keycard not recognized at door.'
+        )
+        self.client.force_login(self.staff)
+        response = self.client.post(reverse('helpdesk:ticket_detail', args=[ticket.pk]), {
+            'update_status': '1',
+            'status': 'Resolved'
+        })
+        self.assertEqual(response.status_code, 302)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, 'Resolved')
+
