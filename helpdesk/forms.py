@@ -10,7 +10,6 @@ class TicketForm(forms.ModelForm):
         ('Attendance & Time Logs', 'Attendance & Time Logs'),
         ('Leave Request & Balances', 'Leave Request & Balances'),
         ('201 File & Employment Records', '201 File & Employment Records'),
-        ('Benefits & Government Contributions', 'Benefits & Government Contributions (SSS/PhilHealth/Pag-IBIG)'),
         ('IT', 'IT / Technical Support'),
         ('Company Policy & Guidelines', 'Company Policy & Guidelines'),
         ('Account & Login Assistance', 'Account & Login Assistance'),

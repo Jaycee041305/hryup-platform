@@ -290,21 +290,7 @@ const FAQ_DATA = {
             },
             {
                 q: "What documents belong in my 201 file?",
-                a: "Your 201 file stores your employment contract, resume, government IDs (SSS, PhilHealth, Pag-IBIG, TIN), medical certificates, and performance records. You can upload documents under 'My Documents'."
-            }
-        ]
-    },
-    benefits: {
-        title: "Benefits & Government (SSS/PhilHealth/Pag-IBIG)",
-        icon: "bi-heart-pulse",
-        questions: [
-            {
-                q: "How do I update my SSS, PhilHealth, or Pag-IBIG numbers?",
-                a: "Please upload your official Member Data Record (MDR) or E-1/registration form in 'My Documents', or submit an HR ticket below with your updated government numbers."
-            },
-            {
-                q: "How do I file for SSS Sickness or Maternity Benefit?",
-                a: "Notify HR as soon as possible with your SSS Sickness Notification form and doctor's medical certificate. Our HR team will submit the reimbursement claim to SSS."
+                a: "Your 201 file stores your employment contract, resume, government IDs, medical certificates, and performance records. You can upload documents under 'My Documents'."
             }
         ]
     },
@@ -336,8 +322,6 @@ const KEYWORD_MAP = [
     { keywords: ['emergency leave', 'short notice', 'medical certificate'], category: 'Leave Request & Balances', answer: FAQ_DATA.leave.questions[2].a },
     { keywords: ['coe', 'certificate of employment', 'employment cert', 'certificate'], category: '201 File & Employment Records', answer: FAQ_DATA.documents.questions[0].a },
     { keywords: ['201 file', 'contract', 'requirements', 'resume'], category: '201 File & Employment Records', answer: FAQ_DATA.documents.questions[1].a },
-    { keywords: ['sss', 'philhealth', 'pag-ibig', 'pagibig', 'tin', 'government id', 'mdr'], category: 'Benefits & Government Contributions', answer: FAQ_DATA.benefits.questions[0].a },
-    { keywords: ['maternity', 'sickness benefit', 'paternity'], category: 'Benefits & Government Contributions', answer: FAQ_DATA.benefits.questions[1].a },
     { keywords: ['handbook', 'code of conduct', 'policy', 'rules'], category: 'Company Policy & Guidelines', answer: FAQ_DATA.policies.questions[0].a },
     { keywords: ['dress code', 'attire', 'office hours', 'schedule'], category: 'Company Policy & Guidelines', answer: FAQ_DATA.policies.questions[1].a }
 ];
@@ -425,9 +409,6 @@ function renderWelcomeMessage() {
             </button>
             <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('documents')">
                 <i class="bi bi-file-earmark-person me-1"></i> 201 Files & COE
-            </button>
-            <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('benefits')">
-                <i class="bi bi-heart-pulse me-1"></i> SSS, PhilHealth, Pag-IBIG
             </button>
             <button type="button" class="btn btn-outline-primary btn-sm chat-action-btn" onclick="selectCategory('policies')">
                 <i class="bi bi-book me-1"></i> Company Policies
@@ -604,7 +585,6 @@ function promptManualTicket(category = 'General HR Inquiry', initialQuery = '') 
                         <option value="Attendance & Time Logs" ${category.includes('Attendance') ? 'selected' : ''}>Attendance & Time Logs</option>
                         <option value="Leave Request & Balances" ${category.includes('Leave') ? 'selected' : ''}>Leave Request & Balances</option>
                         <option value="201 File & Employment Records" ${category.includes('201') || category.includes('Document') ? 'selected' : ''}>201 File & Employment Records</option>
-                        <option value="Benefits & Government Contributions" ${category.includes('Benefits') || category.includes('SSS') ? 'selected' : ''}>Benefits & Government Contributions</option>
                         <option value="IT" ${category.includes('IT') ? 'selected' : ''}>IT / Technical Support</option>
                         <option value="Company Policy & Guidelines" ${category.includes('Policy') ? 'selected' : ''}>Company Policy & Guidelines</option>
                         <option value="Account & Login Assistance">Account & Login Assistance</option>
