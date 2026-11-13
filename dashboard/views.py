@@ -5,7 +5,6 @@ from employees.models import Employee
 from attendance.models import Attendance
 from leave.models import LeaveRequest, LeaveBalance
 from recruitment.models import JobVacancy
-from helpdesk.models import Ticket
 
 class DashboardIndexView(LoginRequiredMixin, TemplateView):
     """
@@ -23,7 +22,6 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
             User = get_user_model()
             context['total_clients'] = Company.objects.count()
             context['active_clients'] = Company.objects.filter(is_active=True).count()
-            context['open_tickets'] = Ticket.objects.filter(status='Open').count()
             context['staff_members'] = User.objects.filter(role='HRYUP_STAFF').prefetch_related('staff_assignments__company')
             context['recent_companies'] = Company.objects.order_by('-created_at')[:5]
             
@@ -33,9 +31,7 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
                 context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).count()
                 context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING', is_deleted=False).count()
                 context['open_vacancies'] = JobVacancy.objects.filter(company=company, status='Open', is_deleted=False).count()
-                context['open_tickets'] = Ticket.objects.filter(company=company, status='Open', is_deleted=False).count()
                 context['recent_employees'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).exclude(user__role='CLIENT_MANAGER').order_by('-created_at')[:5]
-                context['recent_tickets'] = Ticket.objects.filter(company=company, is_deleted=False).order_by('-created_at')[:5]
                 context['my_company'] = company
 
         elif user.role == 'CLIENT_EMPLOYEE':
@@ -43,12 +39,9 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
                 emp = user.employee_profile
                 context['leave_balances'] = LeaveBalance.objects.filter(employee=emp)
                 context['recent_attendance'] = Attendance.objects.filter(employee=emp).order_by('-date')[:5]
-                context['my_tickets'] = Ticket.objects.filter(employee=emp).order_by('-created_at')[:5]
 
         elif user.role == 'HRYUP_STAFF':
             context['assigned_companies'] = [a.company for a in user.staff_assignments.select_related('company')]
-            assigned_ids = [c.id for c in context['assigned_companies']]
-            context['open_tickets'] = Ticket.objects.filter(company_id__in=assigned_ids, status='Open').count()
             context['pending_clients'] = Company.objects.filter(is_active=True, staff_assignments__isnull=True).distinct().count()
 
         return context
@@ -81,5 +74,4 @@ class ClientDashboardView(LoginRequiredMixin, TemplateView):
         context['client_company'] = company
         context['headcount'] = Employee.objects.filter(company=company, status='ACTIVE', is_deleted=False).count()
         context['pending_leave'] = LeaveRequest.objects.filter(company=company, status='PENDING', is_deleted=False).count()
-        context['open_tickets'] = Ticket.objects.filter(company=company, status='Open', is_deleted=False).count()
         return context

@@ -43,7 +43,7 @@
     <!-- HRYUP ADMIN DASHBOARD -->
     {% if user.role == 'HRYUP_ADMIN' %}
     <div class="row g-4 mb-5 mt-2">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -57,7 +57,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card bg-primary text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -68,20 +68,6 @@
                 </div>
                 <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
                     <i class="bi bi-card-checklist" style="font-size: 8rem;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-gold text-navy h-100 shadow border-0 rounded-4 overflow-hidden position-relative">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-navy text-uppercase fw-bold mb-0 tracking-wide" style="opacity: 0.7;">Open Tickets</h6>
-                        <i class="bi bi-ticket-detailed fs-3 text-navy" style="opacity: 0.4;"></i>
-                    </div>
-                    <h2 class="display-4 fw-bolder mb-0">{{ open_tickets|default:0 }}</h2>
-                </div>
-                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
-                    <i class="bi bi-ticket-detailed" style="font-size: 8rem;"></i>
                 </div>
             </div>
         </div>
@@ -194,7 +180,7 @@
     <!-- CLIENT MANAGER DASHBOARD -->
     {% if user.role == 'CLIENT_MANAGER' %}
     <div class="row g-4 mb-4 mt-2">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -208,7 +194,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -222,7 +208,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-gold text-navy h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -233,20 +219,6 @@
                 </div>
                 <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
                     <i class="bi bi-person-workspace" style="font-size: 8rem;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-white text-danger h-100 shadow border-0 rounded-4 border-start border-4 border-danger overflow-hidden position-relative transition-hover">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-muted text-uppercase fw-bold mb-0 tracking-wide">Open Tickets</h6>
-                        <i class="bi bi-exclamation-octagon fs-3 text-danger" style="opacity: 0.4;"></i>
-                    </div>
-                    <h2 class="display-4 fw-bolder mb-0">{{ open_tickets|default:0 }}</h2>
-                </div>
-                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.05;">
-                    <i class="bi bi-exclamation-octagon" style="font-size: 8rem;"></i>
                 </div>
             </div>
         </div>
@@ -362,7 +334,7 @@
     {% if user.role == 'CLIENT_EMPLOYEE' %}
     <div class="row g-4 mb-4 mt-2">
         <!-- Self-Service Quick Actions -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{% url 'attendance:dashboard' %}" class="text-decoration-none">
                 <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover text-center p-4">
                     <i class="bi bi-fingerprint display-4 mb-2"></i>
@@ -370,7 +342,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{% url 'leave:request' %}" class="text-decoration-none">
                 <div class="card bg-primary text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover text-center p-4">
                     <i class="bi bi-calendar2-plus display-4 mb-2"></i>
@@ -378,7 +350,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{% url 'accounts:profile' %}" class="text-decoration-none">
                 <div class="card bg-gold text-navy h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover text-center p-4">
                     <i class="bi bi-person-vcard display-4 mb-2" style="opacity: 0.8;"></i>
@@ -386,19 +358,11 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
-            <a href="{% url 'helpdesk:ticket_submit' %}" class="text-decoration-none">
-                <div class="card bg-white text-danger h-100 shadow border-0 rounded-4 border-start border-4 border-danger overflow-hidden position-relative transition-hover text-center p-4">
-                    <i class="bi bi-headset display-4 mb-2"></i>
-                    <h6 class="fw-bold tracking-wide mb-0">HR Helpdesk</h6>
-                </div>
-            </a>
-        </div>
     </div>
 
     <div class="row g-4 mb-4">
         <!-- Recent Attendance -->
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
@@ -464,53 +428,13 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Leave & Tickets Sidebar -->
-        <div class="col-lg-4">
-            <!-- My Tickets -->
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold text-navy d-flex align-items-center gap-2">
-                        <i class="bi bi-chat-square-text text-danger"></i> Recent Tickets
-                    </h5>
-                    <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">All</a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush rounded-4 pb-2">
-                        {% for ticket in my_tickets %}
-                        <a href="{% url 'helpdesk:ticket_detail' ticket.pk %}" class="list-group-item list-group-item-action px-4 py-3 border-light transition-hover">
-                            <div class="d-flex w-100 justify-content-between mb-1">
-                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 180px;">{{ ticket.subject }}</h6>
-                                <small class="text-muted">{{ ticket.created_at|date:"M d" }}</small>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <small class="text-muted text-truncate" style="max-width: 150px;">{{ ticket.category }}</small>
-                                {% if ticket.status == 'Open' %}
-                                    <span class="badge bg-danger rounded-pill">Open</span>
-                                {% elif ticket.status == 'In Progress' %}
-                                    <span class="badge bg-warning text-dark rounded-pill">In Progress</span>
-                                {% else %}
-                                    <span class="badge bg-success rounded-pill">Closed</span>
-                                {% endif %}
-                            </div>
-                        </a>
-                        {% empty %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-check2-circle text-muted fs-1 mb-2 opacity-50"></i>
-                            <p class="text-muted mb-0 small">No active tickets.</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     {% endif %}
 
     <!-- HRYUP STAFF DASHBOARD -->
     {% if user.role == 'HRYUP_STAFF' %}
     <div class="row g-4 mb-4 mt-2">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-navy text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -525,7 +449,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <a href="{% url 'companies:create' %}" class="text-decoration-none">
                 <div class="card bg-white h-100 shadow border-0 rounded-4 border-start border-4 border-primary overflow-hidden position-relative transition-hover p-4 d-flex flex-column justify-content-between">
                     <div>
@@ -544,22 +468,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-gold text-navy h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-navy text-uppercase fw-bold mb-0 tracking-wide" style="opacity: 0.7;">Open Tickets</h6>
-                        <i class="bi bi-headset fs-3 text-navy" style="opacity: 0.4;"></i>
-                    </div>
-                    <h2 class="display-4 fw-bolder mb-0">{{ open_tickets|default:0 }}</h2>
-                    <p class="mb-0 mt-2 small text-navy" style="opacity: 0.7;"><i class="bi bi-diagram-3 me-1"></i> Across all clients</p>
-                </div>
-                <div class="position-absolute" style="bottom: -20px; right: -20px; opacity: 0.1;">
-                    <i class="bi bi-headset" style="font-size: 8rem;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white h-100 shadow border-0 rounded-4 overflow-hidden position-relative transition-hover">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
