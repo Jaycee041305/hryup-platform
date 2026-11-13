@@ -93,6 +93,25 @@ def _auto_provision_leave_for_employee(employee):
             defaults={'remaining_days': leave_type.default_days}
         )
 
+GROUP_1_NAMES = [
+    'Vacation Leave',
+    'Sick Leave',
+    'Birthday Leave',
+    'Paternity Leave',
+    'Maternity Leave',
+    'Rehabilitation Leave',
+]
+
+def format_days_display(days, name=None):
+    if name == 'Rehabilitation Leave' and days >= 180:
+        return '6 mos'
+    if name == 'Special Leave for Women (RA 9710)' and days >= 60:
+        return '2 mos'
+    int_days = int(days) if days == int(days) else days
+    if int_days == 1:
+        return '1 day'
+    return f"{int_days} days"
+
 def get_employee_leave_summary(employee):
     """
     Returns structured leave credits, leaves taken, and remaining balances for an employee.
@@ -120,13 +139,18 @@ def get_employee_leave_summary(employee):
         total_days = float(lt.default_days)
         remaining = float(balance.remaining_days) if balance else max(0.0, total_days - taken_days)
         
+        group = 1 if cfg['name'] in GROUP_1_NAMES else 2
+        
         summary.append({
             'name': cfg['name'],
             'allowance_display': cfg['allowance_display'],
             'category': cfg['category'],
+            'group': group,
             'total_days': total_days,
             'taken_days': taken_days,
+            'taken_display': format_days_display(taken_days, cfg['name']),
             'remaining_days': remaining,
+            'remaining_display': format_days_display(remaining, cfg['name']),
             'leave_type': lt,
         })
     return summary
