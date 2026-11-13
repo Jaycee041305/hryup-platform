@@ -30,6 +30,14 @@ class EmployeeDetailView(CompanyAccessMixin, EmployeeSelfOnlyMixin, TenantQueryS
     template_name = 'employees/employee_detail.html'
     context_object_name = 'employee'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        emp = self.object
+        from leave.views import get_employee_leave_summary
+        context['leave_summary'] = get_employee_leave_summary(emp)
+        context['leave_requests'] = emp.leave_requests.filter(is_deleted=False).order_by('-start_date')[:10]
+        return context
+
 class EmployeeCreateView(CompanyAccessMixin, TenantQuerySetMixin, CreateView):
     model = Employee
     template_name = 'employees/employee_form.html'

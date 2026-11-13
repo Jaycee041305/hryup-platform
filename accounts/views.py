@@ -45,6 +45,11 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = UserUpdateForm(instance=self.request.user)
+        if hasattr(self.request.user, 'employee_profile'):
+            emp = self.request.user.employee_profile
+            from leave.views import get_employee_leave_summary
+            context['leave_summary'] = get_employee_leave_summary(emp)
+            context['leave_requests'] = emp.leave_requests.filter(is_deleted=False).order_by('-start_date')[:10]
         return context
 
 class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

@@ -6,21 +6,130 @@ from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm
 from employees.models import Employee
 
+LEAVE_TYPE_CONFIG = [
+    {
+        'name': 'Vacation Leave',
+        'default_days': 15.0,
+        'allowance_display': '5-15 days',
+        'category': 'Company',
+    },
+    {
+        'name': 'Sick Leave',
+        'default_days': 15.0,
+        'allowance_display': '5-15 days',
+        'category': 'Company',
+    },
+    {
+        'name': 'Birthday Leave',
+        'default_days': 1.0,
+        'allowance_display': '1 day',
+        'category': 'Company',
+    },
+    {
+        'name': 'Paternity Leave',
+        'default_days': 7.0,
+        'allowance_display': '7 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Maternity Leave',
+        'default_days': 105.0,
+        'allowance_display': '105 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Rehabilitation Leave',
+        'default_days': 180.0,
+        'allowance_display': '6 months',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Bereavement Leave',
+        'default_days': 5.0,
+        'allowance_display': '3-5 days',
+        'category': 'Company',
+    },
+    {
+        'name': 'Solo Parent Leave',
+        'default_days': 7.0,
+        'allowance_display': '7 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Service Incentive Leave',
+        'default_days': 5.0,
+        'allowance_display': '5 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Special Leave for Women (RA 9710)',
+        'default_days': 60.0,
+        'allowance_display': '2 months',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'VAWC Leave (RA 9262)',
+        'default_days': 10.0,
+        'allowance_display': '10 days',
+        'category': 'Statutory',
+    },
+]
+
 def _auto_provision_leave_for_employee(employee):
-    """Ensures basic leave types exist for the company and the employee has balances."""
+    """Ensures all standard leave types exist for the company and the employee has balances."""
     from .models import LeaveType, LeaveBalance
     company = employee.company
-    if not LeaveType.objects.filter(company=company, is_deleted=False).exists():
-        LeaveType.objects.create(name="Vacation Leave", default_days=15.0, company=company)
-        LeaveType.objects.create(name="Sick Leave", default_days=15.0, company=company)
     
-    for leave_type in LeaveType.objects.filter(company=company, is_deleted=False):
+    for cfg in LEAVE_TYPE_CONFIG:
+        leave_type, _ = LeaveType.objects.get_or_create(
+            company=company,
+            name=cfg['name'],
+            defaults={'default_days': cfg['default_days']}
+        )
         LeaveBalance.objects.get_or_create(
             employee=employee,
             leave_type=leave_type,
             company=company,
             defaults={'remaining_days': leave_type.default_days}
         )
+
+def get_employee_leave_summary(employee):
+    """
+    Returns structured leave credits, leaves taken, and remaining balances for an employee.
+    """
+    from .models import LeaveType, LeaveBalance, LeaveRequest
+    _auto_provision_leave_for_employee(employee)
+    
+    summary = []
+    for cfg in LEAVE_TYPE_CONFIG:
+        lt = LeaveType.objects.filter(company=employee.company, name=cfg['name'], is_deleted=False).first()
+        if not lt:
+            continue
+        
+        balance = LeaveBalance.objects.filter(employee=employee, leave_type=lt, is_deleted=False).first()
+        
+        # Calculate leaves taken (sum of duration_days of APPROVED leave requests)
+        approved_requests = LeaveRequest.objects.filter(
+            employee=employee,
+            leave_type=lt,
+            status=LeaveRequest.StatusChoices.APPROVED,
+            is_deleted=False
+        )
+        taken_days = sum(req.duration_days for req in approved_requests)
+        
+        total_days = float(lt.default_days)
+        remaining = float(balance.remaining_days) if balance else max(0.0, total_days - taken_days)
+        
+        summary.append({
+            'name': cfg['name'],
+            'allowance_display': cfg['allowance_display'],
+            'category': cfg['category'],
+            'total_days': total_days,
+            'taken_days': taken_days,
+            'remaining_days': remaining,
+            'leave_type': lt,
+        })
+    return summary
 
 @login_required
 def leave_dashboard(request):
@@ -136,8 +245,16 @@ def approve_leave(request, pk):
 
     leave_request = get_object_or_404(LeaveRequest, pk=pk, is_deleted=False)
     if request.method == 'POST':
-        leave_request.status = LeaveRequest.StatusChoices.APPROVED
-        leave_request.save()
+        if leave_request.status != LeaveRequest.StatusChoices.APPROVED:
+            leave_request.status = LeaveRequest.StatusChoices.APPROVED
+            leave_request.save()
+            balance = LeaveBalance.objects.filter(
+                employee=leave_request.employee,
+                leave_type=leave_request.leave_type
+            ).first()
+            if balance:
+                balance.remaining_days = max(0, float(balance.remaining_days) - float(leave_request.duration_days))
+                balance.save()
         messages.success(request, f"Leave request for {leave_request.employee} approved.")
     return redirect('leave:manager_queue')
 
@@ -149,6 +266,14 @@ def reject_leave(request, pk):
 
     leave_request = get_object_or_404(LeaveRequest, pk=pk, is_deleted=False)
     if request.method == 'POST':
+        if leave_request.status == LeaveRequest.StatusChoices.APPROVED:
+            balance = LeaveBalance.objects.filter(
+                employee=leave_request.employee,
+                leave_type=leave_request.leave_type
+            ).first()
+            if balance:
+                balance.remaining_days = float(balance.remaining_days) + float(leave_request.duration_days)
+                balance.save()
         leave_request.status = LeaveRequest.StatusChoices.REJECTED
         leave_request.save()
         messages.success(request, f"Leave request for {leave_request.employee} rejected.")

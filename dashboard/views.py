@@ -37,6 +37,8 @@ class DashboardIndexView(LoginRequiredMixin, TemplateView):
         elif user.role == 'CLIENT_EMPLOYEE':
             if hasattr(user, 'employee_profile'):
                 emp = user.employee_profile
+                from leave.views import get_employee_leave_summary
+                context['leave_summary'] = get_employee_leave_summary(emp)
                 context['leave_balances'] = LeaveBalance.objects.filter(employee=emp)
                 context['recent_attendance'] = Attendance.objects.filter(employee=emp).order_by('-date')[:5]
 
