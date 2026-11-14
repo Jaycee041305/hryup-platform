@@ -7,6 +7,50 @@ from .forms import LeaveRequestForm
 from employees.models import Employee
 
 LEAVE_TYPE_CONFIG = [
+    # Statutory & Special Statutory Leaves (First)
+    {
+        'name': 'Maternity Leave',
+        'default_days': 105.0,
+        'allowance_display': '105 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Paternity Leave',
+        'default_days': 7.0,
+        'allowance_display': '7 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Solo Parent Leave',
+        'default_days': 7.0,
+        'allowance_display': '7 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Special Leave for Women (RA 9710)',
+        'default_days': 60.0,
+        'allowance_display': '2 months',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'VAWC Leave (RA 9262)',
+        'default_days': 10.0,
+        'allowance_display': '10 days',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Rehabilitation Leave',
+        'default_days': 180.0,
+        'allowance_display': '6 months',
+        'category': 'Statutory',
+    },
+    {
+        'name': 'Service Incentive Leave',
+        'default_days': 5.0,
+        'allowance_display': '5 days',
+        'category': 'Statutory',
+    },
+    # Company Leaves (Second)
     {
         'name': 'Vacation Leave',
         'default_days': 15.0,
@@ -26,52 +70,10 @@ LEAVE_TYPE_CONFIG = [
         'category': 'Company',
     },
     {
-        'name': 'Paternity Leave',
-        'default_days': 7.0,
-        'allowance_display': '7 days',
-        'category': 'Statutory',
-    },
-    {
-        'name': 'Maternity Leave',
-        'default_days': 105.0,
-        'allowance_display': '105 days',
-        'category': 'Statutory',
-    },
-    {
-        'name': 'Rehabilitation Leave',
-        'default_days': 180.0,
-        'allowance_display': '6 months',
-        'category': 'Statutory',
-    },
-    {
         'name': 'Bereavement Leave',
         'default_days': 5.0,
         'allowance_display': '3-5 days',
         'category': 'Company',
-    },
-    {
-        'name': 'Solo Parent Leave',
-        'default_days': 7.0,
-        'allowance_display': '7 days',
-        'category': 'Statutory',
-    },
-    {
-        'name': 'Service Incentive Leave',
-        'default_days': 5.0,
-        'allowance_display': '5 days',
-        'category': 'Statutory',
-    },
-    {
-        'name': 'Special Leave for Women (RA 9710)',
-        'default_days': 60.0,
-        'allowance_display': '2 months',
-        'category': 'Statutory',
-    },
-    {
-        'name': 'VAWC Leave (RA 9262)',
-        'default_days': 10.0,
-        'allowance_display': '10 days',
-        'category': 'Statutory',
     },
 ]
 
@@ -93,13 +95,14 @@ def _auto_provision_leave_for_employee(employee):
             defaults={'remaining_days': leave_type.default_days}
         )
 
-GROUP_1_NAMES = [
-    'Vacation Leave',
-    'Sick Leave',
-    'Birthday Leave',
-    'Paternity Leave',
+STATUTORY_LEAVE_NAMES = [
     'Maternity Leave',
+    'Paternity Leave',
+    'Solo Parent Leave',
+    'Special Leave for Women (RA 9710)',
+    'VAWC Leave (RA 9262)',
     'Rehabilitation Leave',
+    'Service Incentive Leave',
 ]
 
 def format_days_display(days, name=None):
@@ -139,7 +142,8 @@ def get_employee_leave_summary(employee):
         total_days = float(lt.default_days)
         remaining = float(balance.remaining_days) if balance else max(0.0, total_days - taken_days)
         
-        group = 1 if cfg['name'] in GROUP_1_NAMES else 2
+        # Group 1 = Special & Statutory Leaves (first), Group 2 = Company Leaves (second)
+        group = 1 if (cfg['category'] == 'Statutory' or cfg['name'] in STATUTORY_LEAVE_NAMES) else 2
         
         summary.append({
             'name': cfg['name'],
