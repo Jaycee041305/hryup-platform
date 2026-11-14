@@ -47,103 +47,54 @@
                     </a>
                     {% endif %}
                 </div>
-                <div class="card-body px-4 pb-4 pt-2">
-                    <div class="row g-3">
-                        <!-- Group 1: Special & Statutory Leaves (First) -->
-                        <div class="col-xl-6 col-12">
-                            <div class="border rounded-3 h-100 overflow-hidden shadow-sm">
-                                <div class="bg-light py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold small text-navy text-uppercase tracking-wide d-flex align-items-center">
-                                        <i class="bi bi-shield-check text-primary me-2"></i> Special & Statutory Leaves
-                                    </span>
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 small">Statutory</span>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-sm align-middle mb-0">
-                                        <thead class="table-light text-muted small">
-                                            <tr>
-                                                <th class="ps-3 py-2 border-0">Leave Type</th>
-                                                <th class="py-2 border-0 text-center">Allowance</th>
-                                                <th class="py-2 border-0 text-center">Taken</th>
-                                                <th class="pe-3 py-2 border-0 text-center">Balance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="border-top-0">
-                                            {% for item in leave_summary %}
-                                            {% if item.group == 1 %}
-                                            <tr>
-                                                <td class="ps-3 py-2 fw-semibold text-dark small">{{ item.name }}</td>
-                                                <td class="py-2 text-center text-muted small font-monospace">{{ item.allowance_display }}</td>
-                                                <td class="py-2 text-center small">
-                                                    {% if item.taken_days > 0 %}
-                                                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1">{{ item.taken_display }}</span>
-                                                    {% else %}
-                                                        <span class="text-muted">0</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="pe-3 py-2 text-center small">
-                                                    {% if item.remaining_days > 0 %}
-                                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-bold">{{ item.remaining_display }}</span>
-                                                    {% else %}
-                                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">0</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Group 2: Company Leaves (Second) -->
-                        <div class="col-xl-6 col-12">
-                            <div class="border rounded-3 h-100 overflow-hidden shadow-sm">
-                                <div class="bg-light py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold small text-navy text-uppercase tracking-wide d-flex align-items-center">
-                                        <i class="bi bi-building text-warning me-2"></i> Company Leaves
-                                    </span>
-                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1 small">Company</span>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-sm align-middle mb-0">
-                                        <thead class="table-light text-muted small">
-                                            <tr>
-                                                <th class="ps-3 py-2 border-0">Leave Type</th>
-                                                <th class="py-2 border-0 text-center">Allowance</th>
-                                                <th class="py-2 border-0 text-center">Taken</th>
-                                                <th class="pe-3 py-2 border-0 text-center">Balance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="border-top-0">
-                                            {% for item in leave_summary %}
-                                            {% if item.group == 2 %}
-                                            <tr>
-                                                <td class="ps-3 py-2 fw-semibold text-dark small">{{ item.name }}</td>
-                                                <td class="py-2 text-center text-muted small font-monospace">{{ item.allowance_display }}</td>
-                                                <td class="py-2 text-center small">
-                                                    {% if item.taken_days > 0 %}
-                                                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1">{{ item.taken_display }}</span>
-                                                    {% else %}
-                                                        <span class="text-muted">0</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="pe-3 py-2 text-center small">
-                                                    {% if item.remaining_days > 0 %}
-                                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-bold">{{ item.remaining_display }}</span>
-                                                    {% else %}
-                                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">0</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive px-3 pb-3">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted small">
+                                <tr>
+                                    <th class="ps-3 border-0 rounded-start">Leave Type</th>
+                                    <th class="border-0">Category</th>
+                                    <th class="border-0 text-center">Standard Allowance</th>
+                                    <th class="border-0 text-center">Total Entitled</th>
+                                    <th class="border-0 text-center">Leaves Taken</th>
+                                    <th class="border-0 text-center rounded-end">Remaining Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for item in leave_summary %}
+                                <tr>
+                                    <td class="ps-3 fw-bold text-dark">{{ item.name }}</td>
+                                    <td>
+                                        {% if item.category == 'Statutory' %}
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1 small">Statutory</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1 small">Company</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center font-monospace">{{ item.allowance_display }}</td>
+                                    <td class="text-center text-muted">{{ item.total_days|floatformat:0 }} day{% if item.total_days != 1 %}s{% endif %}</td>
+                                    <td class="text-center">
+                                        {% if item.taken_days > 0 %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold">{{ item.taken_days|floatformat:0 }} day{% if item.taken_days != 1 %}s{% endif %}</span>
+                                        {% else %}
+                                            <span class="text-muted small">0 days</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if item.remaining_days > 0 %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold">{{ item.remaining_days|floatformat:0 }} day{% if item.remaining_days != 1 %}s{% endif %}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-semibold">Exhausted</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-3 text-muted">No leave credits records.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
