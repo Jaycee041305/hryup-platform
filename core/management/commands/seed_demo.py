@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         # 2. Companies
         company1, created = Company.objects.get_or_create(
-            name="Alpha Tech MSME",
+            name="Alpha Tech SME",
             defaults={
                 'email': 'contact@alphatech.example.com',
                 'company_size': 'SMALL',
@@ -49,7 +49,7 @@ class Command(BaseCommand):
             )
 
         company2, created = Company.objects.get_or_create(
-            name="Beta Retail MSME",
+            name="Beta Retail SME",
             defaults={
                 'email': 'contact@betaretail.example.com',
                 'company_size': 'MICRO',

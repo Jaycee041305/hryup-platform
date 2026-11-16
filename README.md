@@ -1,6 +1,6 @@
 # HRyUp - Virtual HR Support Platform
 
-HRyUp is a virtual Human Resource support service tailored for micro, small, and medium enterprises (MSMEs) in Las Piñas City. This multi-tenant Django platform centralizes 6 core HR functions:
+HRyUp is a virtual Human Resource support service tailored for small and medium enterprises (SMEs) in Las Piñas City. This multi-tenant Django platform centralizes 6 core HR functions:
 1. Recruitment Assistance
 2. Onboarding Support
 3. 201 Files / Employee Records
